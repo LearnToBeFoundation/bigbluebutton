@@ -14,7 +14,7 @@ sed -i "s/${OLD_VERSION}/${NEW_VERSION}/g" bigbluebutton-config/bigbluebutton-re
 
 # Update locales recursively
 # 60 Locales
-LOCALES=('ar_SY' 'az_AZ' 'bg_BG' 'bn_BN' 'bn_IN' 'ca_ES' 'cs_CZ' 'cy_GB' 'da_DK' 'de_DE' 'el_GR' 'en_US' 'es_ES' 'es_LA' 'et_EE' 'eu_ES' 'eu_EU' 'fa_IR' 'ff_SN' 'fi_FI' 'fr_CA' 'fr_FR' 'he_IL' 'hr_HR' 'hu_HU' 'hy_AM' 'id_ID' 'it_IT' 'ja_JP' 'kk_KZ' 'km_KH' 'ko_KR' 'lt_LT' 'lv_LV' 'ml_IN' 'mn_MN' 'ms_MY' 'nb_NO' 'ne_NE' 'ne_NP' 'nl_NL' 'no_NO' 'pl_PL' 'pt_BR' 'pt_PT' 'ro_RO' 'ru_RU' 'si_LK' 'sk_SK' 'sl_SI' 'sl_SL' 'sr_RS' 'sr_SR' 'sv_SE' 'th_TH' 'tr_TR' 'uk_UA' 'vi_VN' 'zh_CN' 'zh_TW');
+LOCALES=('ar_SY' 'az_AZ' 'bg_BG' 'bn_BN' 'bn_IN' 'ca_ES' 'cs_CZ' 'cy_GB' 'da_DK' 'de_DE' 'el_GR' 'en_US' 'es_ES' 'es_LA' 'et_EE' 'eu_ES' 'fa_IR' 'ff_SN' 'fi_FI' 'fr_CA' 'fr_FR' 'he_IL' 'hr_HR' 'hu_HU' 'hy_AM' 'id_ID' 'it_IT' 'ja_JP' 'kk_KZ' 'km_KH' 'ko_KR' 'lt_LT' 'lv_LV' 'ml_IN' 'mn_MN' 'ms_MY' 'nb_NO' 'ne_NE' 'ne_NP' 'nl_NL' 'no_NO' 'pl_PL' 'pt_BR' 'pt_PT' 'ro_RO' 'ru_RU' 'si_LK' 'sk_SK' 'sl_SI' 'sl_SL' 'sr_RS' 'sr_SR' 'sv_SE' 'th_TH' 'tr_TR' 'uk_UA' 'vi_VN' 'zh_CN' 'zh_TW');
 
 for i in "${LOCALES[@]}"
 do

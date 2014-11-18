@@ -2,7 +2,7 @@
 <locales>
 	<locale code="ar_SY" name="Arabic (Syria)"/>
 	<locale code="az_AZ" name="Azerbaijani"/>
-	<locale code="eu_EU" name="Basque" />
+	<!--<locale code="eu_EU" name="Basque" />-->
 	<locale code="bn_BN" name="Bengali" />
 	<locale code="bg_BG" name="Bulgarian" />
 	<locale code="ca_ES" name="Catalan" />
