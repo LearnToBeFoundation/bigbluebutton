@@ -41,7 +41,10 @@ package org.bigbluebutton.modules.whiteboard.managers
 	import org.bigbluebutton.modules.whiteboard.views.WhiteboardCanvas;
 	import org.bigbluebutton.modules.whiteboard.views.WhiteboardTextToolbar;
 	import org.bigbluebutton.modules.whiteboard.views.WhiteboardToolbar;
-	
+	import org.bigbluebutton.modules.whiteboard.views.SimwriteToolbarButton;
+	import org.bigbluebutton.core.UsersUtil;
+    import org.bigbluebutton.common.events.ToolbarButtonEvent;
+
 	public class WhiteboardManager
 	{
     private static const LOG:String = "WB::WhiteboardManager - ";
@@ -57,6 +60,8 @@ package org.bigbluebutton.modules.whiteboard.managers
 		private var model:WhiteboardCanvasModel = new WhiteboardCanvasModel();
 		private var displayModel:WhiteboardCanvasDisplayModel = new WhiteboardCanvasDisplayModel();
         
+		private var simwriteBtn:SimwriteToolbarButton = new SimwriteToolbarButton();
+
 		public function WhiteboardManager() {
 			globalDispatcher = new Dispatcher();
 		}
@@ -84,13 +89,35 @@ package org.bigbluebutton.modules.whiteboard.managers
 			textToolbar.canvas = highlighterCanvas;
 			textToolbar.init();
 			highlighterCanvas.textToolbar = textToolbar;
-            
+
+            addToolbarButton();
+
 			//Necessary now because of module loading race conditions
 			var t:Timer = new Timer(1000, 1);
 			t.addEventListener(TimerEvent.TIMER, addHighlighterCanvas);
 			t.start();
 		}
 		
+		private function displayToolbarButton():void {
+		    simwriteBtn.isModerator = true;
+
+			if (UsersUtil.amIModerator()) {
+			  simwriteBtn.isModerator = true;
+			} else {
+			  simwriteBtn.isModerator = false;
+			}
+		}
+		
+		private function addToolbarButton():void {
+		  LogUtil.debug("****************** Adding toolbar simwriteBtn. presenter?=[" + UsersUtil.amIPresenter() + "]");
+			displayToolbarButton();
+
+			var event:ToolbarButtonEvent = new ToolbarButtonEvent(ToolbarButtonEvent.ADD);
+			event.button = simwriteBtn;
+			event.module="WhiteboardSimwrite";
+			globalDispatcher.dispatchEvent(event);
+		}
+				
 		private function addHighlighterCanvas(e:TimerEvent):void {
       trace(LOG + "Adding Whiteboard Overlay Canvas");
 			PresentationAPI.getInstance().addOverlayCanvas(highlighterCanvas);
