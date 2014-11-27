@@ -30,6 +30,7 @@ package org.bigbluebutton.modules.whiteboard.models
 	import org.bigbluebutton.modules.whiteboard.events.WhiteboardDrawEvent;
 	import org.bigbluebutton.modules.whiteboard.events.WhiteboardShapesEvent;
 	import org.bigbluebutton.modules.whiteboard.events.WhiteboardUpdate;
+  import org.bigbluebutton.modules.whiteboard.events.SimwriteEvent;
 
 	public class WhiteboardModel
 	{
@@ -143,13 +144,19 @@ package org.bigbluebutton.modules.whiteboard.models
       }
       
     }
-
-
+    
 		public function enable(enabled:Boolean):void {
 			
 		}
         
-      
+    public function toggleMultidraw(isMultidrawEnabled:Boolean):void {
+      var simwriteToggledEvt:SimwriteEvent = new SimwriteEvent(SimwriteEvent.SIMWRITE_CHANGED_CALLBACK);
+    
+      simwriteToggledEvt.simwriteEnabled = isMultidrawEnabled;
+      LogUtil.debug("@@@ WB MODEL: toggle multidraw = " + isMultidrawEnabled);
+      _dispatcher.dispatchEvent(simwriteToggledEvt);        
+    } 
+
     public function getCurrentWhiteboardId():String {
       var page:Page = PresentationModel.getInstance().getCurrentPage();
       if (page != null) {

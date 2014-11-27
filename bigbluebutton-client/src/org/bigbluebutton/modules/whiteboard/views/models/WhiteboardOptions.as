@@ -4,7 +4,7 @@ package org.bigbluebutton.modules.whiteboard.views.models
 	import org.bigbluebutton.common.LogUtil;
 	public class WhiteboardOptions
 	{
-		[Bindable] public var whiteboardAccess:String = "presenter";
+		[Bindable] public var whiteboardAccess:String = "all";
 		[Bindable] public var baseTabIndex:int = 701;
         [Bindable] public var keepToolbarVisible:Boolean = false;
         

@@ -135,6 +135,16 @@ public class WhiteboardService {
 		application.setIsWhiteboardEnabled(meetingID, requesterID);
 	}
 	
+	public void toggleMultidraw(Map<String, Object> message) {
+		log.info("WhiteboardApplication - Toggling multidraw " + (Boolean)message.get("isMultidrawEnabled"));
+
+		String meetingID = getMeetingId();
+		String requesterID = getBbbSession().getInternalUserID();
+		Boolean enableMultidraw = (Boolean)message.get("isMultidrawEnabled");
+
+		application.toggleMultidraw(meetingID, requesterID, enableMultidraw);
+	}
+
 	private BigBlueButtonSession getBbbSession() {
 		return (BigBlueButtonSession) Red5.getConnectionLocal().getAttribute(Constants.SESSION);
 	}

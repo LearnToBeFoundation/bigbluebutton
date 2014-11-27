@@ -98,4 +98,10 @@ trait WhiteboardApp {
       outGW.send(new IsWhiteboardEnabledReply(meetingID, recorded, 
                        msg.requesterID, enabled, msg.replyTo))
     }
+
+  def handleToggleMultidrawRequest(msg: ToggleMultidrawRequest) {
+      wbModel.enableMultidraw(msg.enableMultidraw)   
+      outGW.send(new ToggleMultidrawEvent(meetingID, recorded, 
+                       msg.requesterID, msg.enableMultidraw))
+    }
 }

@@ -40,7 +40,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
   <mate:Listener type="{NavigationEvent.GOTO_PAGE}" method="handleSlideChange" />
   <mate:Listener type="{DisplaySlideEvent.DISPLAY_SLIDE_EVENT}" method="handleSlideLoaded" />
   <mate:Listener type="{UploadEvent.PRESENTATION_READY}" method="handlePresentationSwitch" />
-    
+  <mate:Listener type="{SimwriteEvent.SIMWRITE_CHANGED_CALLBACK}" method="handleSimwriteChanged" />
+
   <mx:Style>
     .colorPickerStyle {
       backgroundColor:#E5E6E7;
@@ -94,7 +95,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			import org.bigbluebutton.modules.whiteboard.events.WhiteboardSettingResetEvent;
 			import org.bigbluebutton.modules.whiteboard.views.models.WhiteboardOptions;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
-			
+			import org.bigbluebutton.modules.whiteboard.events.SimwriteEvent;
+
 			private var images:Images = new Images();
 			[Bindable] private var hand_icon:Class = images.hand_icon;
 			[Bindable] private var pencil_icon:Class = images.pencil_icon;
@@ -118,7 +120,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			[Bindable] public var wbOptions:WhiteboardOptions;
 			[Bindable] private var baseIndex:int;
 			
-			[Bindable] private var showWhiteboardToolbar:Boolean = false;
+			[Bindable] private var showWhiteboardToolbar:Boolean = true;
+			[Bindable] private var isMultidrawEnabled:Boolean = true;
 
       private static const LOG:String = "WB::WhiteboardToolbar - ";
       
@@ -261,8 +264,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			
             private function checkVisibility(e:MadePresenterEvent = null):void {
                 if (toolbarAllowed() && slideLoaded && (wbOptions.keepToolbarVisible || mousedOver)) {
+                    LogUtil.debug("@@@ Whiteboard toolbar allowed");
                     setPositionAndDepth();
                     showWhiteboardToolbar = true;
+
                 } else {
                     showWhiteboardToolbar = false;
                 }
@@ -306,7 +311,22 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                }
                checkVisibility();
            }
-           
+
+           private function handleSimwriteChanged(e:SimwriteEvent):void {
+		   	    LogUtil.debug("@@@ WB TOOLBAR: toggle multidraw = " + e.simwriteEnabled);
+				isMultidrawEnabled = e.simwriteEnabled;
+				checkVisibility();
+				
+				if(!isModerator || !isPresenter) {
+					if(isMultidrawEnabled) {
+						presenterMode(null);
+					} else {
+						viewerMode(null);
+					}
+				} else {
+					presenterMode(null);
+				}
+		   }
       private function graphicObjSelected(event:GraphicObjectFocusEvent):void  {
         var gobj:GraphicObject = event.data;
       }
@@ -321,9 +341,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
             return isPresenter;
           else if (wbOptions.whiteboardAccess == "moderator")
             return isModerator || isPresenter;
-          else if (wbOptions.whiteboardAccess == "all")
-            return true;
-          else
+          else if (wbOptions.whiteboardAccess == "all") {
+			LogUtil.debug("@@@ multi-draw permissions: " + (isPresenter || isModerator || isMultidrawEnabled));
+            return isPresenter || isModerator || isMultidrawEnabled;
+          } else
             return false;
         } else
           return false;

@@ -177,7 +177,8 @@ class CollectorActor(dispatcher: IDispatcher) extends Actor {
         case msg: UndoWhiteboardEvent           => handleUndoWhiteboardEvent(msg)
         case msg: WhiteboardEnabledEvent        => handleWhiteboardEnabledEvent(msg)
         case msg: IsWhiteboardEnabledReply      => handleIsWhiteboardEnabledReply(msg)
-
+        case msg: ToggleMultidrawEvent          => handleToggleMultidrawEvent(msg)
+        
         case _ => // do nothing
       }
     }
@@ -2193,6 +2194,11 @@ class CollectorActor(dispatcher: IDispatcher) extends Actor {
 
   private def handleIsWhiteboardEnabledReply(msg: IsWhiteboardEnabledReply) {
     val json = WhiteboardMessageToJsonConverter.isWhiteboardEnabledReplyToJson(msg)
+    dispatcher.dispatch(json)
+  }
+
+  private def handleToggleMultidrawEvent(msg: ToggleMultidrawEvent) {
+    val json = WhiteboardMessageToJsonConverter.toggleMultidrawEventToJson(msg)
     dispatcher.dispatch(json)
   }
 }

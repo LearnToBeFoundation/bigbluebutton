@@ -647,6 +647,13 @@ case class IsWhiteboardEnabledReply(
     version:String = Versions.V_0_0_1
 ) extends IOutMessage
                        
+case class ToggleMultidrawEvent(
+    meetingID: String, 
+    recorded: Boolean, 
+    requesterID: String, 
+    enableMultidraw: Boolean,
+    version:String = Versions.V_0_0_1
+) extends IOutMessage
 
 // Value Objects
 case class MeetingVO(

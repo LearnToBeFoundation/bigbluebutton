@@ -43,14 +43,15 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			import org.bigbluebutton.main.views.MainToolbar;
 			import org.bigbluebutton.util.i18n.ResourceUtil;
 			import org.bigbluebutton.core.UsersUtil;
-			
+			import org.bigbluebutton.modules.whiteboard.events.SimwriteEvent;
+
 			private var images:Images = new Images();
 			[Bindable] public var drawIcon:Class = images.user_draw;
 			
 			private var _currentState:Boolean = true;
 
-			private var drawOnTooltip:String = "Turn on multi-draw";
-			private var drawOffTooltip:String = "Turn off multi-draw";
+			[Bindable] private var drawOnTooltip:String = "Turn on multi-draw";
+			[Bindable] private var drawOffTooltip:String = "Turn off multi-draw";
 			
 			private var dispatcher:Dispatcher;
 			
@@ -90,15 +91,20 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
 			
 			private function handleClick(event:MouseEvent):void {
+				var simwriteEvent:SimwriteEvent = new SimwriteEvent(SimwriteEvent.SIMWRITE_BUTTON_CLICKED);
 				_currentState  = !_currentState;
 				
 				if(_currentState) {
 					this.selected = true;
+					simwriteEvent.simwriteEnabled = true;
 					drawIcon = images.user_draw;
 				} else {
 					this.selected = false;
+					simwriteEvent.simwriteEnabled = false;
 					drawIcon = images.user_draw_off;
 				}
+				//LogUtil.debug("@@@ DISPATCHING B?C TOGGLE SIMWRITE BUTTON CLICKED");
+				dispatcher.dispatchEvent(simwriteEvent);
 			}
 			
 			public function isMultiDrawEnabled():Boolean {

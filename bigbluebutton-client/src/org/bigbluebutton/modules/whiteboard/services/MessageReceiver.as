@@ -26,6 +26,7 @@ package org.bigbluebutton.modules.whiteboard.services
   import org.bigbluebutton.modules.whiteboard.business.shapes.TextObject;
   import org.bigbluebutton.modules.whiteboard.models.Annotation;
   import org.bigbluebutton.modules.whiteboard.models.WhiteboardModel;
+  import org.bigbluebutton.modules.whiteboard.events.SimwriteEvent;
 
   public class MessageReceiver implements IMessageListener
   {
@@ -59,7 +60,10 @@ package org.bigbluebutton.modules.whiteboard.services
           break;  
         case "WhiteboardUndoCommand":
           handleUndoCommand(message);
-          break;  			
+          break;
+        case "WhiteboardToggleMultidrawCommand":
+          handleToggleMultidrawEvent(message);
+        break; 
         default:
 //          LogUtil.warn("Cannot handle message [" + messageName + "]");
       }
@@ -114,6 +118,13 @@ package org.bigbluebutton.modules.whiteboard.services
             
       //if (result as Boolean) modifyEnabledCallback(true);
       LogUtil.debug("Whiteboard Enabled? " + message.enabled);
+    }
+
+    private function handleToggleMultidrawEvent(message:Object):void {
+      LogUtil.debug("@@@ WB MESSAGE RECEIVER: RECEIVED toggle multidraw" + message.msg + " **** \n");
+      var map:Object = JSON.parse(message.msg);
+      LogUtil.debug("@@@ MULTIDRAW ENABLED STATUS: " + (map.isMultidrawEnabled as Boolean));
+      whiteboardModel.toggleMultidraw((map.isMultidrawEnabled as Boolean));
     }
 
     private function handleRequestAnnotationHistoryReply(message:Object):void {

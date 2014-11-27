@@ -45,7 +45,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.modules.whiteboard.services.MessageSender;
       import org.bigbluebutton.modules.whiteboard.services.WhiteboardService;
       import org.bigbluebutton.modules.whiteboard.views.WhiteboardCanvas;
-			
+	  import org.bigbluebutton.modules.whiteboard.events.SimwriteEvent;
 		]]>
 	</mx:Script>
 	
@@ -122,6 +122,15 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
     <MethodInvoker generator="{WhiteboardManager}" method="handlePageChangedEvent" arguments="{event}" />
   </EventHandlers>
   
+  	<EventHandlers type="{SimwriteEvent.SIMWRITE_BUTTON_CLICKED}" >
+		<MethodInvoker generator="{WhiteboardManager}" method="simwriteBtnClicked" arguments="{event}" />
+		<MethodInvoker generator="{WhiteboardService}" method="toggleMultidraw" arguments="{event}" />
+	</EventHandlers>
+	
+	<EventHandlers type="{SimwriteEvent.SIMWRITE_CHANGED_CALLBACK}" >
+		<MethodInvoker generator="{WhiteboardManager}" method="toggleMultidraw" arguments="{event}" />
+	</EventHandlers>
+	
     <Injectors target="{WhiteboardManager}">
         <ObjectBuilder generator="{WhiteboardModel}" cache="global" constructorArguments="{scope.dispatcher}"/>
         <PropertyInjector targetKey="whiteboardModel" source="{WhiteboardModel}"/>

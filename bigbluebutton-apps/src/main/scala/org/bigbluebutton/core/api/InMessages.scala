@@ -502,3 +502,9 @@ case class IsWhiteboardEnabledRequest(
     requesterID: String,
     replyTo: String
 ) extends InMessage
+
+case class ToggleMultidrawRequest(
+    meetingID: String,
+    requesterID: String, 
+    enableMultidraw: Boolean
+) extends InMessage

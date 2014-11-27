@@ -120,4 +120,7 @@ public class WhiteboardApplication extends ApplicationAdapter implements IApplic
 		bbbInGW.isWhiteboardEnabled(meetingID, requesterID, replyTo);
 	}
 	
+	public void toggleMultidraw(String meetingID, String requesterID, Boolean enableMultidraw) {
+		bbbInGW.toggleMultidraw(meetingID, requesterID, enableMultidraw);
+	}
 }

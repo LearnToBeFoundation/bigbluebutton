@@ -112,6 +112,7 @@ class MeetingActor(val meetingID: String, val meetingName: String, val recorded:
 	    case msg: UndoWhiteboardRequest                  => handleUndoWhiteboardRequest(msg)
 	    case msg: EnableWhiteboardRequest                => handleEnableWhiteboardRequest(msg)
 	    case msg: IsWhiteboardEnabledRequest             => handleIsWhiteboardEnabledRequest(msg)
+      case msg: ToggleMultidrawRequest                 => handleToggleMultidrawRequest(msg)
 	    case msg: SetRecordingStatus                     => handleSetRecordingStatus(msg)
 	    case msg: GetRecordingStatus                     => handleGetRecordingStatus(msg)
 	    case msg: VoiceRecording                         => handleVoiceRecording(msg)

@@ -17,6 +17,7 @@ class WhiteboardClientMessageSender(service: ConnectionInvokerService) extends O
       case msg: UndoWhiteboardEvent                  => handleUndoWhiteboardEvent(msg)
       case msg: WhiteboardEnabledEvent               => handleWhiteboardEnabledEvent(msg)
       case msg: IsWhiteboardEnabledReply             => handleIsWhiteboardEnabledReply(msg)
+      case msg: ToggleMultidrawEvent         		 => handleToggleMultidrawEvent(msg)
       case _ => // do nothing
     }
   }
@@ -126,5 +127,17 @@ class WhiteboardClientMessageSender(service: ConnectionInvokerService) extends O
 		
 	val m = new BroadcastClientMessage(msg.meetingID, "WhiteboardUndoCommand", message);
 	service.sendMessage(m);
+  }
+
+  private def handleToggleMultidrawEvent(msg: ToggleMultidrawEvent) {
+	val args = new java.util.HashMap[String, Object]()
+	args.put("isMultidrawEnabled", msg.enableMultidraw:java.lang.Boolean)
+	
+	val message = new java.util.HashMap[String, Object]() 
+	val gson = new Gson();
+  	message.put("msg", gson.toJson(args))
+	
+	val m = new BroadcastClientMessage(msg.meetingID, "WhiteboardToggleMultidrawCommand", message)
+	service.sendMessage(m)
   }
 }

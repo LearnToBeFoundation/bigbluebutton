@@ -29,6 +29,7 @@ package org.bigbluebutton.modules.whiteboard.services
 	import org.bigbluebutton.modules.whiteboard.events.PageEvent;
 	import org.bigbluebutton.modules.whiteboard.events.WhiteboardDrawEvent;
 	import org.bigbluebutton.modules.whiteboard.events.WhiteboardPresenterEvent;
+	import org.bigbluebutton.modules.whiteboard.events.SimwriteEvent;
 
 	public class MessageSender
 	{	
@@ -176,6 +177,21 @@ package org.bigbluebutton.modules.whiteboard.services
 				}
 			);
 		}
-					
+		public function toggleMultidraw(e:SimwriteEvent):void {
+			var message:Object = new Object();
+			message["isMultidrawEnabled"] = e.simwriteEnabled;
+			
+			LogUtil.debug("@@@ Sending [whiteboard.toggleMultidraw] to server.");
+			var _nc:ConnectionManager = BBB.initConnectionManager();
+			_nc.sendMessage("whiteboard.toggleMultidraw", 
+				function(result:String):void { // On successful result
+					LogUtil.debug(result); 
+				},	                   
+				function(status:String):void { // status - On error occurred
+					LogUtil.error(status); 
+				},
+				message
+			);
+		}
 	}
 }

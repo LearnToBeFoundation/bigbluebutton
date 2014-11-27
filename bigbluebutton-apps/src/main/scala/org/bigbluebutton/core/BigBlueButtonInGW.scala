@@ -385,6 +385,10 @@ class BigBlueButtonInGW(bbbGW: BigBlueButtonGateway, presUtil: PreuploadedPresen
 	  wbGW.isWhiteboardEnabled(meetingID, requestedID, replyTo)
 	}
 	
+	def toggleMultidraw(meetingID: String, requestedID: String, enableMultidraw: java.lang.Boolean) {
+	  wbGW.toggleMultidraw(meetingID, requestedID, enableMultidraw)
+	}
+
 	/*********************************************************************
 	 * Message Interface for Voice
 	 *******************************************************************/

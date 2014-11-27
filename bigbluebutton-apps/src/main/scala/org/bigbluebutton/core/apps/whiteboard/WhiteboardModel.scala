@@ -7,7 +7,8 @@ class WhiteboardModel {
   private var _whiteboards = new scala.collection.immutable.HashMap[String, Whiteboard]()
   
   private var _enabled = true
-    
+  private var _multidrawEnabled = true 
+
   private def saveWhiteboard(wb: Whiteboard) {
     _whiteboards += wb.id -> wb
   }
@@ -83,5 +84,9 @@ class WhiteboardModel {
   
   def isWhiteboardEnabled():Boolean = {
     _enabled
+  }
+
+  def enableMultidraw(mdrawEnabled: Boolean) {
+    _multidrawEnabled = mdrawEnabled
   }
 }
