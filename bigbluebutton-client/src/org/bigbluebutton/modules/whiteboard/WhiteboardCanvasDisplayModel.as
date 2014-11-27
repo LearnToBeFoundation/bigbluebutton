@@ -61,7 +61,8 @@ package org.bigbluebutton.modules.whiteboard
   import org.bigbluebutton.modules.whiteboard.models.Annotation;
   import org.bigbluebutton.modules.whiteboard.models.WhiteboardModel;
   import org.bigbluebutton.modules.whiteboard.views.WhiteboardCanvas;
-  
+  import org.bigbluebutton.core.UsersUtil;
+
     /**
     * Class to handle displaying of received annotations from the server.
     */
@@ -77,9 +78,10 @@ package org.bigbluebutton.modules.whiteboard
     private var bbbCanvas:IBbbCanvas;
     private var width:Number;
     private var height:Number;
-            
-	private var zoomPercentage:Number = 1;
-	
+    private var isMultidrawEnabled:Boolean = true;
+
+	  private var zoomPercentage:Number = 1;
+	 
     public function doMouseDown(mouseX:Number, mouseY:Number):void {
       /**
         * Check if the presenter is starting a new text annotation without committing the last one.
@@ -92,6 +94,7 @@ package org.bigbluebutton.modules.whiteboard
         
     public function drawGraphic(event:WhiteboardUpdate):void{
       var o:Annotation = event.annotation;
+      LogUtil.debug("@@@ WB CANVA DISPLAY ANNOTATIOn " + o.type);
       //  LogUtil.debug("**** Drawing graphic [" + o.type + "] *****");
       if (o.type != DrawObject.TEXT) {    
         var dobj:DrawObject;
@@ -107,13 +110,16 @@ package org.bigbluebutton.modules.whiteboard
           case DrawObject.DRAW_UPDATE:
           case DrawObject.DRAW_END:
             if (_annotationsList.length > 0) {
-              var gobj:DrawObject = _annotationsList.pop();  
-              if (gobj.id == o.id) {
+              var gobjData:Array = getGobjInfoWithID(o.id);
+              var gobj:DrawObject = gobjData[1];//_annotationsList.pop(); 
+              var gobjExists:Boolean = false;
+              if (gobj != null) {
                 // LogUtil.debug("Removing shape [" + gobj.id + "]");
                 wbCanvas.removeGraphic(gobj as DisplayObject);
+                gobjExists = true;
               } else { // no DRAW_START event was thrown for o so place gobj back on the top
-                trace(LOG + "Not removing shape [" + gobj.id + "] new [" + o.id + "]");
-                _annotationsList.push(gobj);
+                ///trace(LOG + "Not removing shape [" + gobj.id + "] new [" + o.id + "]");
+                ///_annotationsList.push(gobj);
               }              
             }
                  
@@ -121,8 +127,15 @@ package org.bigbluebutton.modules.whiteboard
             if (dobj != null) {
               dobj.draw(o, shapeFactory.parentWidth, shapeFactory.parentHeight, zoomPercentage);
               wbCanvas.addGraphic(dobj);
-              _annotationsList.push(dobj);              
+              if(gobjExists)
+                _annotationsList[gobjData[0]] = dobj;
+                else
+                _annotationsList.push(dobj);
             }
+              
+              if(o.status == DrawObject.DRAW_END) {
+                LogUtil.debug("@@@ NUMBER OF ANNOTATIONS: " + _annotationsList.length);
+              }           
             break;
         }                   
       } else { 
@@ -131,7 +144,11 @@ package org.bigbluebutton.modules.whiteboard
     }
                    
     // Draws a TextObject when/if it is received from the server
-    private function drawText(o:Annotation):void {    
+    private function drawText(o:Annotation):void {
+      LogUtil.debug("@@@ WB CANVAS: DRAWING TEXT!!!!!");
+      LogUtil.debug("@@@ TeXT RECEIVED: "  + o.annotation["originatorID"] + " " + (o.annotation["originatorID"] == UsersUtil.getMyUserID()));
+      LogUtil.debug("@@@ WB CANVAS: DRAWING TEXT PASS 2");
+      var presTextFlag:Boolean = (isMultidrawEnabled) ? (o.annotation["originatorID"] == UsersUtil.getMyUserID()) : isPresenter; 
       switch (o.status) {
         case TextObject.TEXT_CREATED:
           if (isPresenter)
@@ -159,7 +176,7 @@ package org.bigbluebutton.modules.whiteboard
     /* adds a new TextObject that is suited for a presenter. For example, it will be made editable and the appropriate listeners will be registered so that
     the required events will be dispatched  */
     private function addPresenterText(o:Annotation, background:Boolean=false):void {
-      if (!isPresenter) return;
+      if (!(isPresenter || (o.annotation["originatorID"] == UsersUtil.getMyUserID()))) return;
             
             /**
             * We will not be listening for keyboard events to input texts. Tell others to not listen for these events. For example, the presentation module
@@ -567,7 +584,8 @@ package org.bigbluebutton.modules.whiteboard
       annotation["calcedFontSize"] = GraphicFactory.normalize(tobj.textSize, shapeFactory.parentHeight);
       annotation["textBoxWidth"] = tobj.textBoxWidth;
       annotation["textBoxHeight"] = tobj.textBoxHeight;
-      
+      annotation["originatorID"] = UsersUtil.getMyUserID();
+
       var wbId:String = whiteboardModel.getCurrentWhiteboardId();
       if (wbId != null) {
         annotation["whiteboardId"] = wbId;        
@@ -596,6 +614,10 @@ package org.bigbluebutton.modules.whiteboard
         /** Helper method to test whether this user is the presenter */
         private function get isPresenter():Boolean {
             return UserManager.getInstance().getConference().amIPresenter;
+        }
+
+        public function setMultidrawEnabled(enabled:Boolean):void {
+          this.isMultidrawEnabled = enabled;
         }
   }
 }

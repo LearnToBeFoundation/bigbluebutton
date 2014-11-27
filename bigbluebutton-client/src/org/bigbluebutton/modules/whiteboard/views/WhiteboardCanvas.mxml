@@ -65,7 +65,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private var toolType:String = DrawObject.PENCIL;
 			private var whiteboardEnabled:Boolean = false;
 			private var showWhiteboard:Boolean = true;
-          
+          	private var isMultidrawEnabled:Boolean = true;
+
 			private function init():void {
 				this.label = "Highlighter";
                 registerForMouseEvents();
@@ -321,6 +322,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                 useHandCursor = true;
 			}
 			
+			public function setMultidrawEnabled(enabled:Boolean):void{
+				this.isMultidrawEnabled = enabled;
+				displayModel.setMultidrawEnabled(enabled);
+			}
 		]]>
 	</mx:Script>
 </mx:Canvas>
