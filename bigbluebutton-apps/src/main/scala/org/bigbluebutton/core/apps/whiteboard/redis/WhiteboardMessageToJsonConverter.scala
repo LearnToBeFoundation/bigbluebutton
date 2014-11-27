@@ -91,14 +91,4 @@ object WhiteboardMessageToJsonConverter {
     val header = Util.buildHeader(MessageNames.IS_WHITEBOARD_ENABLED_REPLY, msg.version, Some(msg.replyTo))
     Util.buildJson(header, payload)
   }  
-
-  def toggleMultidrawEventToJson(msg: ToggleMultidrawEvent):String = {
-    val payload = new java.util.HashMap[String, Any]()
-    payload.put(Constants.MEETING_ID, msg.meetingID)
-    payload.put(Constants.REQUESTER_ID, msg.requesterID)
-    payload.put("isMultidrawEnabled", msg.enableMultidraw)
-    
-    val header = Util.buildHeader(MessageNames.TOGGLE_MULTIDRAW_EVENT, msg.version, None)
-    Util.buildJson(header, payload)
-  } 
 }
