@@ -31,6 +31,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.modules.present.events.UploadEvent;
       import org.bigbluebutton.modules.present.events.WindowResizedEvent;
       import org.bigbluebutton.modules.whiteboard.commands.GetWhiteboardShapesCommand;
+      import org.bigbluebutton.modules.whiteboard.commands.GetWhiteboardSimwriteStateCommand;
       import org.bigbluebutton.modules.whiteboard.events.PageEvent;
       import org.bigbluebutton.modules.whiteboard.events.StartWhiteboardModuleEvent;
       import org.bigbluebutton.modules.whiteboard.events.ToggleGridEvent;
@@ -130,7 +131,11 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	<EventHandlers type="{SimwriteEvent.SIMWRITE_CHANGED_CALLBACK}" >
 		<MethodInvoker generator="{WhiteboardManager}" method="toggleMultidraw" arguments="{event}" />
 	</EventHandlers>
-	
+
+	<EventHandlers type="{GetWhiteboardSimwriteStateCommand.GET_SIMWRITE_STATE}">
+        <MethodInvoker generator="{WhiteboardService}" method="getSimwriteState" arguments="{event}"/>
+    </EventHandlers>
+
     <Injectors target="{WhiteboardManager}">
         <ObjectBuilder generator="{WhiteboardModel}" cache="global" constructorArguments="{scope.dispatcher}"/>
         <PropertyInjector targetKey="whiteboardModel" source="{WhiteboardModel}"/>

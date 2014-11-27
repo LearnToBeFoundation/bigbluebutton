@@ -18,6 +18,7 @@ class WhiteboardClientMessageSender(service: ConnectionInvokerService) extends O
       case msg: WhiteboardEnabledEvent               => handleWhiteboardEnabledEvent(msg)
       case msg: IsWhiteboardEnabledReply             => handleIsWhiteboardEnabledReply(msg)
       case msg: ToggleMultidrawEvent         		 => handleToggleMultidrawEvent(msg)
+      case msg: SimwriteStateReply           		 => handleSimwriteStateReply(msg)
       case _ => // do nothing
     }
   }
@@ -138,6 +139,18 @@ class WhiteboardClientMessageSender(service: ConnectionInvokerService) extends O
   	message.put("msg", gson.toJson(args))
 	
 	val m = new BroadcastClientMessage(msg.meetingID, "WhiteboardToggleMultidrawCommand", message)
+	service.sendMessage(m)
+  }
+
+  private def handleSimwriteStateReply(msg: SimwriteStateReply) {
+	val args = new java.util.HashMap[String, Object]()			
+	args.put("multidrawState", msg.multidrawState:java.lang.Boolean)
+	
+	val message = new java.util.HashMap[String, Object]() 
+	val gson = new Gson();
+  	message.put("msg", gson.toJson(args))
+	
+	val m = new DirectClientMessage(msg.meetingID, msg.requesterID, "WhiteboardRequestSimwriteStateReply", message)
 	service.sendMessage(m)
   }
 }

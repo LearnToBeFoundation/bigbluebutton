@@ -123,4 +123,10 @@ public class WhiteboardApplication extends ApplicationAdapter implements IApplic
 	public void toggleMultidraw(String meetingID, String requesterID, Boolean enableMultidraw) {
 		bbbInGW.toggleMultidraw(meetingID, requesterID, enableMultidraw);
 	}
+
+	public void requestSimwriteState(String meetingID, String requesterID) {
+		// Just hardcode as we don't really need it for flash client. (Ajay Gopinath (agopinath) nov 26, 2014)
+		String replyTo = meetingID + "/" + requesterID; 
+		bbbInGW.requestSimwriteState(meetingID, requesterID, replyTo);
+	}
 }

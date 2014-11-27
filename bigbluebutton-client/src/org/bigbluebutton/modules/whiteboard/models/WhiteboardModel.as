@@ -157,6 +157,14 @@ package org.bigbluebutton.modules.whiteboard.models
       _dispatcher.dispatchEvent(simwriteToggledEvt);        
     } 
 
+    public function handleSimwriteStateReply(simwriteStateReply:Boolean):void {
+      var simwriteToggledEvt:SimwriteEvent = new SimwriteEvent(SimwriteEvent.SIMWRITE_CHANGED_CALLBACK);
+    
+      simwriteToggledEvt.simwriteEnabled = simwriteStateReply;
+      LogUtil.debug("@@@ WB MODEL: SIMWRITE STATE CHANGING TO " + simwriteStateReply);
+      _dispatcher.dispatchEvent(simwriteToggledEvt);        
+    }
+
     public function getCurrentWhiteboardId():String {
       var page:Page = PresentationModel.getInstance().getCurrentPage();
       if (page != null) {

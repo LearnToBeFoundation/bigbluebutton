@@ -389,6 +389,10 @@ class BigBlueButtonInGW(bbbGW: BigBlueButtonGateway, presUtil: PreuploadedPresen
 	  wbGW.toggleMultidraw(meetingID, requestedID, enableMultidraw)
 	}
 
+	def requestSimwriteState(meetingID: String, requestedID: String, replyTo: String) {
+	  wbGW.requestSimwriteState(meetingID, requestedID, replyTo)
+	}
+
 	/*********************************************************************
 	 * Message Interface for Voice
 	 *******************************************************************/

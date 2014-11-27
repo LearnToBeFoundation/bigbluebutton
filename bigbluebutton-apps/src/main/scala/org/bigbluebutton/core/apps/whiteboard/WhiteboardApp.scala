@@ -104,4 +104,10 @@ trait WhiteboardApp {
       outGW.send(new ToggleMultidrawEvent(meetingID, recorded, 
                        msg.requesterID, msg.enableMultidraw))
     }
+
+  def handleSimwriteStateRequest(msg: SimwriteStateRequest) {
+      val multidrawEnabled = wbModel.isMultidrawEnabled()
+      outGW.send(new SimwriteStateReply(meetingID, recorded, 
+                       msg.requesterID, multidrawEnabled, msg.replyTo))
+    }
 }

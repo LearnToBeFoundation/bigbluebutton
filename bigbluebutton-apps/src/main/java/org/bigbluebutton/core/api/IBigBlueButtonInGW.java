@@ -116,4 +116,5 @@ public interface IBigBlueButtonInGW {
 	void enableWhiteboard(String meetingID, String requesterID, Boolean enable);
 	void isWhiteboardEnabled(String meetingID, String requesterID, String replyTo);
 	void toggleMultidraw(String meetingID, String requesterID, Boolean enableMultidraw);
+	void requestSimwriteState(String meetingID, String requesterID, String replyTo);
 }

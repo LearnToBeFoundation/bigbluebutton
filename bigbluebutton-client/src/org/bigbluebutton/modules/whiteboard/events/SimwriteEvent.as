@@ -26,6 +26,9 @@ package org.bigbluebutton.modules.whiteboard.events
 	{
 		public static const SIMWRITE_BUTTON_CLICKED:String = "SIMWRITE_BUTTON_CLICKED";
 		public static const SIMWRITE_CHANGED_CALLBACK:String = "SIMWRITE_CHANGED_CALLBACK";
+		public static const GET_SIMWRITE_STATE:String = "GET_SIMWRITE_STATE";
+		public static const TOGGLE_BUTTON_STATE:String = "TOGGLE_BUTTON_STATE";
+		
 		public var simwriteEnabled:Boolean;
 		
 		public function SimwriteEvent(type:String)

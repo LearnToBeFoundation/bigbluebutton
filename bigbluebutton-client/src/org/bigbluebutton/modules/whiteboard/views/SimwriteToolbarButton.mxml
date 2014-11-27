@@ -32,7 +32,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 		   implements="org.bigbluebutton.common.IBbbToolbarComponent">
 
 	<!--<mate:Listener type="{ShortcutEvent.SHARE_WEBCAM}" method="remoteClick" />-->
-	
+	<mate:Listener type="{SimwriteEvent.TOGGLE_BUTTON_STATE}" method="toggleThisButton" />
+
 	<mx:Script>
 		<![CDATA[
 			import com.asfusion.mate.events.Dispatcher;
@@ -66,6 +67,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			
 		  public function set isModerator(moderator:Boolean):void {
 			visible = moderator;
+			includeInLayout = moderator;
 		  }
 
 			private function mouseOverHandler(event:MouseEvent):void {
@@ -109,6 +111,14 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			
 			public function isMultiDrawEnabled():Boolean {
 				return _currentState;
+			}
+
+			private function toggleThisButton(event:SimwriteEvent):void {
+				var state:Boolean = event.simwriteEnabled;
+				if(state)
+					this.selected = true;
+				else
+					this.selected = false;
 			}
 		]]>
 	</mx:Script>

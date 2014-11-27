@@ -63,7 +63,10 @@ package org.bigbluebutton.modules.whiteboard.services
           break;
         case "WhiteboardToggleMultidrawCommand":
           handleToggleMultidrawEvent(message);
-        break; 
+          break; 
+        case "WhiteboardRequestSimwriteStateReply":
+          handleRequestSimwriteStateReply(message);
+          break;
         default:
 //          LogUtil.warn("Cannot handle message [" + messageName + "]");
       }
@@ -121,10 +124,18 @@ package org.bigbluebutton.modules.whiteboard.services
     }
 
     private function handleToggleMultidrawEvent(message:Object):void {
-      LogUtil.debug("@@@ WB MESSAGE RECEIVER: RECEIVED toggle multidraw" + message.msg + " **** \n");
+      LogUtil.debug("@@@ WB MESSAGE RECEIVER: RECEIVED toggle multidraw: " + message.msg + " **** \n");
       var map:Object = JSON.parse(message.msg);
       LogUtil.debug("@@@ MULTIDRAW ENABLED STATUS: " + (map.isMultidrawEnabled as Boolean));
+
       whiteboardModel.toggleMultidraw((map.isMultidrawEnabled as Boolean));
+    }
+
+    private function handleRequestSimwriteStateReply(message:Object):void {
+      LogUtil.debug("@@@ WB MESSAGE RECEIVER: RECEIVED SIMWRITE STATE: " + message.msg + " **** \n");
+      var map:Object = JSON.parse(message.msg);
+
+      whiteboardModel.handleSimwriteStateReply((map.multidrawState as Boolean));
     }
 
     private function handleRequestAnnotationHistoryReply(message:Object):void {

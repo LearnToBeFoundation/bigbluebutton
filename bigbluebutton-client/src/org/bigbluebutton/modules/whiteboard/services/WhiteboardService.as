@@ -22,6 +22,7 @@ package org.bigbluebutton.modules.whiteboard.services
   import org.bigbluebutton.core.managers.UserManager;
   import org.bigbluebutton.modules.present.events.PresentationEvent;
   import org.bigbluebutton.modules.whiteboard.commands.GetWhiteboardShapesCommand;
+  import org.bigbluebutton.modules.whiteboard.commands.GetWhiteboardSimwriteStateCommand;
   import org.bigbluebutton.modules.whiteboard.events.PageEvent;
   import org.bigbluebutton.modules.whiteboard.events.WhiteboardDrawEvent;
   import org.bigbluebutton.modules.whiteboard.events.WhiteboardPresenterEvent;
@@ -82,5 +83,8 @@ package org.bigbluebutton.modules.whiteboard.services
       sender.toggleMultidraw(e);
     }
 
+    public function getSimwriteState(cmd:GetWhiteboardSimwriteStateCommand):void {
+      sender.requestSimwriteState(cmd.whiteboardId);
+    }
 	}
 }

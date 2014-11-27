@@ -145,6 +145,15 @@ public class WhiteboardService {
 		application.toggleMultidraw(meetingID, requesterID, enableMultidraw);
 	}
 
+	public void requestSimwriteState(Map<String, Object> message) {
+		log.info("WhiteboardApplication - Requesting multidraw state");
+
+		String meetingID = getMeetingId();
+		String requesterID = getBbbSession().getInternalUserID();
+
+		application.requestSimwriteState(meetingID, requesterID);
+	}
+
 	private BigBlueButtonSession getBbbSession() {
 		return (BigBlueButtonSession) Red5.getConnectionLocal().getAttribute(Constants.SESSION);
 	}

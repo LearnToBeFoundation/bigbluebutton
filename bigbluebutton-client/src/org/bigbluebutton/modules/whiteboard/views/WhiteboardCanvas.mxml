@@ -37,12 +37,14 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.modules.whiteboard.business.shapes.ShapeFactory;
       import org.bigbluebutton.modules.whiteboard.business.shapes.TextObject;
       import org.bigbluebutton.modules.whiteboard.commands.GetWhiteboardShapesCommand;
+      import org.bigbluebutton.modules.whiteboard.commands.GetWhiteboardSimwriteStateCommand;
       import org.bigbluebutton.modules.whiteboard.events.PageEvent;
       import org.bigbluebutton.modules.whiteboard.events.WhiteboardButtonEvent;
       import org.bigbluebutton.modules.whiteboard.events.WhiteboardDrawEvent;
       import org.bigbluebutton.modules.whiteboard.events.WhiteboardSettingResetEvent;
       import org.bigbluebutton.modules.whiteboard.models.Annotation;
-			
+      import org.bigbluebutton.modules.whiteboard.events.SimwriteEvent;
+
 			public var model:WhiteboardCanvasModel;	
             public var displayModel:WhiteboardCanvasDisplayModel;
             
@@ -73,7 +75,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
          var dispatcher:Dispatcher = new Dispatcher();
          dispatcher.dispatchEvent(new GetWhiteboardShapesCommand(webId));
       }
-			
+
+	  public function queryForSimwriteState(webId:String):void {
+		LogUtil.debug("@@@ wbcanvas - asking for simwrite state");
+        var dispatcher:Dispatcher = new Dispatcher();
+        dispatcher.dispatchEvent(new GetWhiteboardSimwriteStateCommand(webId));
+      }
+
       public function registerForMouseEvents():void {
           addEventListener(MouseEvent.MOUSE_DOWN, doMouseDown);
           addEventListener(MouseEvent.MOUSE_UP, doMouseUp);
@@ -257,6 +265,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           var webId:String = model.whiteboardModel.getCurrentWhiteboardId();
           if (webId != null) {
             queryForAnnotationHistory(webId);
+            queryForSimwriteState(webId);
           }        
         }
                     

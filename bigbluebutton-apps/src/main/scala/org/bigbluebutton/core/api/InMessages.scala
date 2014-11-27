@@ -508,3 +508,9 @@ case class ToggleMultidrawRequest(
     requesterID: String, 
     enableMultidraw: Boolean
 ) extends InMessage
+
+case class SimwriteStateRequest(
+    meetingID: String, 
+    requesterID: String,
+    replyTo: String
+) extends InMessage

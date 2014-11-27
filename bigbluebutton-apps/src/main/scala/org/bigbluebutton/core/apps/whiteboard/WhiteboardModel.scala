@@ -89,4 +89,8 @@ class WhiteboardModel {
   def enableMultidraw(mdrawEnabled: Boolean) {
     _multidrawEnabled = mdrawEnabled
   }
+
+  def isMultidrawEnabled():Boolean = {
+    _multidrawEnabled
+  }
 }

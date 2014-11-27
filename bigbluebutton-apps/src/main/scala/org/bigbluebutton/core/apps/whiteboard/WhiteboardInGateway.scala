@@ -54,4 +54,8 @@ class WhiteboardInGateway(bbbGW: BigBlueButtonGateway) {
 	def toggleMultidraw(meetingID: String, requesterID: String, enableMultidraw: Boolean) {
 	  bbbGW.accept(new ToggleMultidrawRequest(meetingID, requesterID, enableMultidraw))
 	}
+
+	def requestSimwriteState(meetingID: String, requesterID: String, replyTo: String) {
+	  bbbGW.accept(new SimwriteStateRequest(meetingID, requesterID, replyTo))
+	}
 }

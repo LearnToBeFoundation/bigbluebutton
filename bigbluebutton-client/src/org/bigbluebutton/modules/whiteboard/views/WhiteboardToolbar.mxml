@@ -315,16 +315,20 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
            private function handleSimwriteChanged(e:SimwriteEvent):void {
 		   	    LogUtil.debug("@@@ WB TOOLBAR: toggle multidraw = " + e.simwriteEnabled);
 				isMultidrawEnabled = e.simwriteEnabled;
-				checkVisibility();
 				
-				if(!isModerator || !isPresenter) {
+				if(!isPresenter) {
 					if(isMultidrawEnabled) {
 						presenterMode(null);
 					} else {
 						viewerMode(null);
 					}
-				} else {
-					presenterMode(null);
+
+					if(isModerator) {
+						var toggleSimwriteButtonEvt:SimwriteEvent = new SimwriteEvent(SimwriteEvent.TOGGLE_BUTTON_STATE);
+	  
+					    toggleSimwriteButtonEvt.simwriteEnabled = isMultidrawEnabled;
+					    dispatchEvent(toggleSimwriteButtonEvt);        
+					}
 				}
 		   }
       private function graphicObjSelected(event:GraphicObjectFocusEvent):void  {
@@ -342,8 +346,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           else if (wbOptions.whiteboardAccess == "moderator")
             return isModerator || isPresenter;
           else if (wbOptions.whiteboardAccess == "all") {
-			LogUtil.debug("@@@ multi-draw permissions: " + (isPresenter || isModerator || isMultidrawEnabled));
-            return isPresenter || isModerator || isMultidrawEnabled;
+			//LogUtil.debug("@@@ MULTI-DRAW USER PERMISSIONS: " + (isPresenter || isModerator || isMultidrawEnabled));
+            //return isPresenter || isModerator || isMultidrawEnabled;
+			LogUtil.debug("@@@ MULTI-DRAW USER PERMISSIONS: " + (isPresenter  || isMultidrawEnabled));
+			return isPresenter || isMultidrawEnabled;
           } else
             return false;
         } else

@@ -193,5 +193,21 @@ package org.bigbluebutton.modules.whiteboard.services
 				message
 			);
 		}
+
+		public function requestSimwriteState(wbId:String):void {
+			LogUtil.debug("@@@ WB::MessageSender: sending request for simwrite state to server");
+            var msg:Object = new Object();
+            //msg["whiteboardId"] = wbId;
+            
+            var _nc:ConnectionManager = BBB.initConnectionManager();
+            _nc.sendMessage("whiteboard.requestSimwriteState", 
+                function(result:String):void { // On successful result
+                    LogUtil.debug(result); 
+                },	                   
+                function(status:String):void { // status - On error occurred
+                    LogUtil.error(status); 
+                }
+            );
+        }
 	}
 }
