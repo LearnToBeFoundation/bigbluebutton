@@ -138,7 +138,7 @@ package org.bigbluebutton.modules.present.business
         trace(LOG + "Could not find next page. Current page [" + cmd.curPageId + "]");
       }
     }
-				
+	
 		/**
 		 * Start uploading the selected file 
 		 * @param e
@@ -161,7 +161,7 @@ package org.bigbluebutton.modules.present.business
 		public function gotoSlide(e:PresenterCommands):void{
      // sender.gotoSlide(e.slideNumber);
 		}
-				
+	
 		/**
 		 * Loads a presentation from the server. creates a new PresentationService class 
 		 * 

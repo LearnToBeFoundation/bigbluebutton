@@ -85,6 +85,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.main.views.MainCanvas;
       import org.bigbluebutton.modules.present.commands.GoToNextPageCommand;
       import org.bigbluebutton.modules.present.commands.GoToPrevPageCommand;
+      import org.bigbluebutton.modules.present.commands.ChangePresentationCommand;
       import org.bigbluebutton.modules.present.events.AddOverlayCanvasEvent;
       import org.bigbluebutton.modules.present.events.DisplaySlideEvent;
       import org.bigbluebutton.modules.present.events.NavigationEvent;
@@ -95,11 +96,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.modules.present.events.WindowResizedEvent;
       import org.bigbluebutton.modules.present.managers.Slide;
       import org.bigbluebutton.modules.present.model.Page;
+      import org.bigbluebutton.modules.present.model.Presentation;
       import org.bigbluebutton.modules.present.model.PresentationModel;
       import org.bigbluebutton.modules.present.ui.views.PresentOptions;
       import org.bigbluebutton.modules.whiteboard.events.WhiteboardButtonEvent;
       import org.bigbluebutton.util.i18n.ResourceUtil;
-             		
+      import mx.containers.TabNavigator;
+         		
       private static const LOG:String = "Present::PresentationWindow - ";
       
       public static const TITLE:String = "Presentation";
@@ -138,6 +141,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private var keyCombos:Object;
 			private var localDispatcher:Dispatcher = new Dispatcher();
 			
+			[Bindable] private var presTabsData:ArrayCollection;
+
 			private function init():void{
 				presentOptions = new PresentOptions();
 				baseIndex = presentOptions.baseTabIndex;;
@@ -159,18 +164,22 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				slideView.slideLoader.tabIndex = baseIndex+4;
 				hotkeyCapture();
                 
-        //Necessary now because of module loading race conditions
-        var t:Timer = new Timer(2000, 1);
-        t.addEventListener(TimerEvent.TIMER, addWhiteboardToolbar);
-        t.start();
-        
-        if (UsersUtil.amIPresenter()) {
-          becomePresenter();
-        } else {
-          becomeViewer();
-        }
+		        //Necessary now because of module loading race conditions
+		        var t:Timer = new Timer(2000, 1);
+		        t.addEventListener(TimerEvent.TIMER, delayedCallback);
+		        t.start();
+
+		        if (UsersUtil.amIPresenter()) {
+		          becomePresenter();
+		        } else {
+		          becomeViewer();
+		        }
 			}
-			
+	  private function delayedCallback(event:TimerEvent) {
+	  	updatePresTabs();
+	  	addWhiteboardToolbar(event);
+	  }
+
       private function addWhiteboardToolbar(event:TimerEvent):void {
         trace(LOG + "Sending event to add whiteboard canvas.");
          // Tell the WhiteboardManager to add the toolbar
@@ -340,6 +349,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private function becomePresenter():void{
 				setupPresenter(true);
 				addContextMenuItems();
+				checkTabs();
 			}
 			
       private function handleBecomeViewer(e:MadePresenterEvent):void{
@@ -353,6 +363,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				this.contextMenu.hideBuiltInItems();
 				if (slideView.thumbnailView.visible)
 					showThumbnails();
+				checkTabs();
 			}
 						
 			private function setupPresenter(isPresenter:Boolean):void {
@@ -380,9 +391,83 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                     displaySlideNavigationControls(false, !!page)
                 }
                 onResetZoom();
+                updatePresTabs();
+                syncTabs();
             }
 
+            /////////// TAB FUNCTIONS //////////////////////
+            private function updatePresTabs():void {
+            	LogUtil.debug("@@@ UPDATING PRES TABS");
+            	presTabsData = PresentationModel.getInstance().getPresentations();
+            	tn.removeAllChildren();
+            	for(var i:int = 0; i < presTabsData.length; i++) {
+            		var vbox:VBox = new VBox();
+					vbox.label = (presTabsData.getItemAt(i) as Presentation).name;
+					tn.addChild(vbox);
+            	}
+            }
+
+			private function checkTabs():void {
+				LogUtil.debug("@@@IS PRESENTER FOR CHECK TABS: " + UsersUtil.amIPresenter());
+				if(UsersUtil.amIPresenter()) {
+					tn.visible = true;
+					LogUtil.debug("@@@TN CHILD: " + tn.numChildren);
+					syncTabs();
+				} else {
+					tn.visible = false;
+				}
+			}
 			
+			private function syncTabs():void {
+				var idx:Number = -1;
+				for(var i:Number = 0; i < tn.numChildren; i++) {
+					var btn:Button = tn.getTabAt(i) as Button;
+					if(btn.label == PresentationModel.getInstance().getCurrentPresentationName()) {
+						idx = i; 
+						break;
+					}
+				}
+				if(idx != -1)
+	                tn.selectedIndex = idx;
+            }
+
+            private function switchPresTab(event:Event):void {
+			    var comp:Button = tn.getTabAt(event.currentTarget.selectedIndex) as Button;
+			    var presSelectedName:String = comp.label;
+			    LogUtil.debug("@@@CLICK SWTICH PRES - name: " + comp.label);
+		        if (presSelectedName == PresentationModel.getInstance().getCurrentPresentationName()) 
+		        	return; 
+
+		        // find ID of the presentation with the same name as the selected tab's name
+		        var presSelectedID:String;
+		       	for(var i:int = 0; i < presTabsData.length; i++) {
+					if(presSelectedName == presTabsData.getItemAt(i).name) {
+						presSelectedID = presTabsData.getItemAt(i).id;
+					}
+				}
+				LogUtil.debug("@@@SWITCH TO TAB PRES - name: " + presSelectedName + ", id: " + presSelectedID);
+
+				//  dispatch event to switch to the selected tab
+			    var changePresCommand:ChangePresentationCommand = new ChangePresentationCommand(presSelectedID);
+		        dispatchEvent(changePresCommand);
+			    
+			    // disable tabs until new presentation has been loaded - done to prevent double selection of diff presentations while they are still loading
+			    /*var timer:Timer = new Timer(4000, 1);
+                timer.addEventListener(TimerEvent.TIMER, function():void {
+  		    		toggleTabs(true);
+                });
+                timer.start();*/
+
+ 			    toggleTabs(false);
+			}
+			
+		    private function toggleTabs(toggle:Boolean):void {
+				for(var i:Number = 0; i < tn.numChildren; i++) {
+					var btn:Button = tn.getTabAt(i) as Button;
+					btn.enabled = toggle;
+	            }
+		    }
+
 			private function displaySlideNavigationControls(isPresenter:Boolean, activePresentation:Boolean):void {
 				var showButtons:Boolean = isPresenter && activePresentation;
 				
@@ -615,8 +700,16 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	<mx:Fade id="thumbFadeIn" alphaFrom="1" alphaTo="0" duration="100" />
 	<mx:Fade id="thumbFadeOut" alphaFrom="0" alphaTo="1" duration="100" />
 
-	<views:SlideView id="slideView" width="100%" height="100%" visible="false" mouseDown="mouseDown = true"
-		mouseUp="mouseDown = false" verticalScrollPolicy="off" horizontalScrollPolicy="off" tabIndex="{baseIndex+4}"/>			    
+	<mx:VBox id="mainContainer">
+		<mx:TabNavigator id="tn"  width="100%" change="switchPresTab(event);" 
+	        paddingTop="0"
+            paddingLeft="0"
+            paddingRight="0"
+            paddingBottom="0">
+   		 </mx:TabNavigator>
+		 <views:SlideView id="slideView" width="100%" height="100%" visible="false" mouseDown="mouseDown = true"
+            mouseUp="mouseDown = false" verticalScrollPolicy="off" horizontalScrollPolicy="off" tabIndex="{baseIndex+4}"/>
+    </mx:VBox>					    
 	<mx:ControlBar id="presCtrlBar" name="presCtrlBar" width="100%" height="{CONTROL_BAR_HEIGHT}" styleName="presentationWindowControlsStyle" >
 		<mx:Button id="uploadPres" visible="false" height="30" styleName="presentationUploadButtonStyle"
     		toolTip="{ResourceUtil.getInstance().getString('bbb.presentation.uploadPresBtn.toolTip')}" 

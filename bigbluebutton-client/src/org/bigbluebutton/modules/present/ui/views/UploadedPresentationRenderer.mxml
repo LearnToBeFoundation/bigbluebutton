@@ -13,11 +13,12 @@
       import org.bigbluebutton.modules.present.events.RemovePresentationEvent;
       import org.bigbluebutton.modules.present.events.UploadEvent;
       import org.bigbluebutton.util.i18n.ResourceUtil;
-      
+      import org.bigbluebutton.common.LogUtil;
+
       private var globalDispatch:Dispatcher = new Dispatcher();
       
       private function showPresentation():void {
-        trace("FileUploadWindow::showPresentation() " + data.id);   
+        LogUtil.debug("FileUploadWindow::showPresentation() " + data.id);   
         var changePresCommand:ChangePresentationCommand = new ChangePresentationCommand(data.id);
         globalDispatch.dispatchEvent(changePresCommand);
         

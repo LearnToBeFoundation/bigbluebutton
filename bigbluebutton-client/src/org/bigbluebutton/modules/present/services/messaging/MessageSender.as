@@ -41,7 +41,7 @@ package org.bigbluebutton.modules.present.services.messaging
       var _nc:ConnectionManager = BBB.initConnectionManager();
       _nc.sendMessage("presentation.sendCursorUpdate", 
         function(result:String):void { // On successful result
-          LogUtil.debug(result); 
+          //LogUtil.debug(result); 
         },	                   
         function(status:String):void { // status - On error occurred
           LogUtil.error(status); 
