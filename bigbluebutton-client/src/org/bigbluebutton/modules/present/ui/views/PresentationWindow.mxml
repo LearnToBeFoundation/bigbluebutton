@@ -49,6 +49,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	<mate:Listener type="{PresentationChangedEvent.PRESENTATION_CHANGED_EVENT}" method="handlePresentationChangedEvent" />
   <mate:Listener type="{NavigationEvent.BIND_KEYBOARD_EVENT}" method="bindToKeyboardEvents" />
 	<mate:Listener type="{UploadEvent.CLEAR_PRESENTATION}" method="clearPresentation" />
+	<mate:Listener type="{RemovePresentationEvent.REMOVE_PRESENTATION_EVENT}" method="handlePresentationRemoved" />
 	<mate:Listener type="{DisplaySlideEvent.DISPLAY_SLIDE_EVENT}" method="handleDisplaySlideEvent" />
 	<mate:Listener type="{AddOverlayCanvasEvent.ADD_OVERLAY_CANVAS}" method="addOverlayCanvas" />
 	<mate:Listener type="{LocaleChangeEvent.LOCALE_CHANGED}" method="localeChanged" />	
@@ -69,6 +70,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import flexlib.mdi.events.MDIWindowEvent;      
       import mx.binding.utils.BindingUtils;
       import mx.collections.ArrayCollection;
+      import mx.collections.Sort;
       import mx.containers.TitleWindow;
       import mx.core.Application;
       import mx.effects.Move;
@@ -93,6 +95,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.modules.present.events.PresentationEvent;
       import org.bigbluebutton.modules.present.events.PresenterCommands;
       import org.bigbluebutton.modules.present.events.UploadEvent;
+      import org.bigbluebutton.modules.present.events.RemovePresentationEvent;
       import org.bigbluebutton.modules.present.events.WindowResizedEvent;
       import org.bigbluebutton.modules.present.managers.Slide;
       import org.bigbluebutton.modules.present.model.Page;
@@ -175,8 +178,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 		          becomeViewer();
 		        }
 			}
-	  private function delayedCallback(event:TimerEvent) {
+	  private function delayedCallback(event:TimerEvent):void {
 	  	updatePresTabs();
+	  	checkTabsVisibility();
+	  	syncTabs();
 	  	addWhiteboardToolbar(event);
 	  }
 
@@ -349,7 +354,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private function becomePresenter():void{
 				setupPresenter(true);
 				addContextMenuItems();
-				checkTabs();
+				checkTabsVisibility();
 			}
 			
       private function handleBecomeViewer(e:MadePresenterEvent):void{
@@ -363,7 +368,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				this.contextMenu.hideBuiltInItems();
 				if (slideView.thumbnailView.visible)
 					showThumbnails();
-				checkTabs();
+				checkTabsVisibility();
 			}
 						
 			private function setupPresenter(isPresenter:Boolean):void {
@@ -396,9 +401,21 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
             }
 
             /////////// TAB FUNCTIONS //////////////////////
+            private function handlePresentationRemoved(e:RemovePresentationEvent):void {
+            	updatePresTabs();
+            }
+
             private function updatePresTabs():void {
             	LogUtil.debug("@@@ UPDATING PRES TABS");
             	presTabsData = PresentationModel.getInstance().getPresentations();
+            	//var presTabsDataClone:ArrayCollection = PresentationModel.getInstance().getPresentations();
+            	//presTabsData.sort(orderPresNames);
+            	//presTabsData.source.sortOn('name', Array.DESCENDING | Array.NUMERIC );
+				var presSort:Sort = new Sort();
+				presSort.compareFunction = orderPresNames;
+				presTabsData.sort = presSort;
+				presTabsData.refresh();
+
             	tn.removeAllChildren();
             	for(var i:int = 0; i < presTabsData.length; i++) {
             		var vbox:VBox = new VBox();
@@ -407,12 +424,24 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
             	}
             }
 
-			private function checkTabs():void {
+            // orders presentation names alphabetically
+            private function orderPresNames(a:Object, b:Object, array:Array = null):int {
+			    var name1:String = a.name;
+			    var name2:String = b.name;
+			    if (name1 < name2) {
+			    	return -1;
+			    } else if (name1 > name2) {
+			    	return 1;
+			    } else {
+			    	return 0;
+			    }
+			}
+			
+			private function checkTabsVisibility():void {
 				LogUtil.debug("@@@IS PRESENTER FOR CHECK TABS: " + UsersUtil.amIPresenter());
 				if(UsersUtil.amIPresenter()) {
 					tn.visible = true;
-					LogUtil.debug("@@@TN CHILD: " + tn.numChildren);
-					syncTabs();
+					//LogUtil.debug("@@@TN CHILD: " + tn.numChildren);
 				} else {
 					tn.visible = false;
 				}
@@ -434,8 +463,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
             private function switchPresTab(event:Event):void {
 			    var comp:Button = tn.getTabAt(event.currentTarget.selectedIndex) as Button;
 			    var presSelectedName:String = comp.label;
-			    LogUtil.debug("@@@CLICK SWTICH PRES - name: " + comp.label);
-		        if (presSelectedName == PresentationModel.getInstance().getCurrentPresentationName()) 
+			    var currPresName:String = PresentationModel.getInstance().getCurrentPresentationName();
+			    LogUtil.debug("@@@CLICK SWTICH PRES - name: " + comp.label + ". Current pres name: " + currPresName);
+		        if (presSelectedName == currPresName) 
 		        	return; 
 
 		        // find ID of the presentation with the same name as the selected tab's name
