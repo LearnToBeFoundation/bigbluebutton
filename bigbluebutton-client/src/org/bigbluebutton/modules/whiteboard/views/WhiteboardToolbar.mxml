@@ -211,6 +211,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
         
 				canvas.makeTextObjectsEditable(e);
         setToolType(WhiteboardConstants.TYPE_ZOOM, null);
+        checkVisibility();
 			}
 			
 			private function viewerMode(e:MadePresenterEvent):void {
@@ -267,7 +268,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                     LogUtil.debug("@@@ Whiteboard toolbar allowed");
                     setPositionAndDepth();
                     showWhiteboardToolbar = true;
-
                 } else {
                     showWhiteboardToolbar = false;
                 }
@@ -318,6 +318,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				canvas.setMultidrawEnabled(e.simwriteEnabled);
 				if(!isPresenter) {
 					if(isMultidrawEnabled) {
+            LogUtil.debug("@@@going into pres mod");
 						presenterMode(null);
 					} else {
 						viewerMode(null);
@@ -346,10 +347,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           else if (wbOptions.whiteboardAccess == "moderator")
             return isModerator || isPresenter;
           else if (wbOptions.whiteboardAccess == "all") {
-			//LogUtil.debug("@@@ MULTI-DRAW USER PERMISSIONS: " + (isPresenter || isModerator || isMultidrawEnabled));
-            //return isPresenter || isModerator || isMultidrawEnabled;
-			LogUtil.debug("@@@ MULTI-DRAW USER PERMISSIONS: " + (isPresenter  || isMultidrawEnabled));
-			return isPresenter || isMultidrawEnabled;
+			       LogUtil.debug("@@@ MULTI-DRAW USER PERMISSIONS: " + (isPresenter  || isMultidrawEnabled));
+			       return isPresenter || isMultidrawEnabled;
           } else
             return false;
         } else
