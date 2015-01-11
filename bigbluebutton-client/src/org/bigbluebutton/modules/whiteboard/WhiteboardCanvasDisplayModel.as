@@ -94,7 +94,6 @@ package org.bigbluebutton.modules.whiteboard
         
     public function drawGraphic(event:WhiteboardUpdate):void{
       var o:Annotation = event.annotation;
-      LogUtil.debug("@@@ WB CANVA DISPLAY ANNOTATIOn " + o.type);
       //  LogUtil.debug("**** Drawing graphic [" + o.type + "] *****");
       if (o.type != DrawObject.TEXT) {    
         var dobj:DrawObject;
@@ -147,24 +146,23 @@ package org.bigbluebutton.modules.whiteboard
     private function drawText(o:Annotation):void {
       LogUtil.debug("@@@ WB CANVAS: DRAWING TEXT!!!!!");
       LogUtil.debug("@@@ TeXT RECEIVED: "  + o.annotation["originatorID"] + " " + (o.annotation["originatorID"] == UsersUtil.getMyUserID()));
-      LogUtil.debug("@@@ WB CANVAS: DRAWING TEXT PASS 2");
       var presTextFlag:Boolean = (isMultidrawEnabled) ? (o.annotation["originatorID"] == UsersUtil.getMyUserID()) : isPresenter; 
       switch (o.status) {
         case TextObject.TEXT_CREATED:
-          if (isPresenter)
+          if (presTextFlag)
             addPresenterText(o, true);
           else
             addNormalText(o);                            
           break;
         case TextObject.TEXT_UPDATED:
-          if (!isPresenter) {
+          if (!presTextFlag) {
                         modifyText(o);
           }   
           break;
         case TextObject.TEXT_PUBLISHED:
           modifyText(o);
           // Inform others that we are done with listening for events and that they should re-listen for keyboard events. 
-          if (isPresenter) {
+          if (presTextFlag) {
             bindToKeyboardEvents(true);
             wbCanvas.stage.focus = null;
             currentlySelectedTextObject = null;
@@ -177,19 +175,16 @@ package org.bigbluebutton.modules.whiteboard
     the required events will be dispatched  */
     private function addPresenterText(o:Annotation, background:Boolean=false):void {
       if (!(isPresenter || (o.annotation["originatorID"] == UsersUtil.getMyUserID()))) return;
-            
             /**
             * We will not be listening for keyboard events to input texts. Tell others to not listen for these events. For example, the presentation module
             * listens for Keyboard.ENTER, Keyboard.SPACE to advance the slides. We don't want that while the presenter is typing texts.
             */
             bindToKeyboardEvents(false);
-      
             var tobj:TextObject = shapeFactory.makeTextObject(o);
             tobj.setGraphicID(o.id);
             tobj.status = o.status;
       tobj.multiline = true;
       tobj.wordWrap = true;
-            
       if (background) {
                 tobj.makeEditable(true);
                 tobj.border = true;
