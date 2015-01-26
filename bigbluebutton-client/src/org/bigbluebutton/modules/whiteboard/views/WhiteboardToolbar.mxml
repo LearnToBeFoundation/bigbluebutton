@@ -41,6 +41,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
   <mate:Listener type="{DisplaySlideEvent.DISPLAY_SLIDE_EVENT}" method="handleSlideLoaded" />
   <mate:Listener type="{UploadEvent.PRESENTATION_READY}" method="handlePresentationSwitch" />
   <mate:Listener type="{SimwriteEvent.SIMWRITE_CHANGED_CALLBACK}" method="handleSimwriteChanged" />
+  <mate:Listener type="{PresentationChangedEvent.PRESENTATION_CHANGED_EVENT}" method="handlePresentationChangedEvent" />
 
   <mx:Style>
     .colorPickerStyle {
@@ -82,6 +83,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			import org.bigbluebutton.modules.present.events.UploadEvent;
 			import org.bigbluebutton.modules.present.ui.views.PresentationWindow;
 			import org.bigbluebutton.modules.present.ui.views.SlideView;
+      import org.bigbluebutton.modules.present.events.PresentationChangedEvent;
 			import org.bigbluebutton.modules.whiteboard.business.shapes.DrawObject;
 			import org.bigbluebutton.modules.whiteboard.business.shapes.GraphicObject;
 			import org.bigbluebutton.modules.whiteboard.business.shapes.TextObject;
@@ -140,7 +142,15 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
 			
       private function onCreationComplete():void {
-        setToolType(WhiteboardConstants.TYPE_ZOOM, null);
+        //setToolType(WhiteboardConstants.TYPE_ZOOM, null);
+        var setColor:int = 0x0088FF;
+        if(UsersUtil.amIModerator()) {
+          setColor = 0x0088FF; // make blue if moderator
+        } else {
+          setColor = 0xFF8800; // make orange if not moderator
+        }
+        cpik.selectedColor = setColor;
+        canvas.model.changeColor(setColor);
       }
 
       private function handleWhiteboardButtonPressed(e:WhiteboardButtonEvent):void {
@@ -310,6 +320,12 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
                    panzoomBtn.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
                }
                checkVisibility();
+           }
+
+           private function handlePresentationChangedEvent(e:PresentationChangedEvent):void {
+             LogUtil.debug("@@@ setting tool to pencil 2");
+             setToolType(WhiteboardConstants.TYPE_SHAPE, DrawObject.PENCIL);
+             LogUtil.debug("@@@ setting tool to pencil 2");
            }
 
            private function handleSimwriteChanged(e:SimwriteEvent):void {
