@@ -50,7 +50,7 @@ package org.bigbluebutton.modules.present.ui.views.models
 		private var _parentW:Number = 0;
 		private var _parentH:Number = 0;
 
-		private var fitToPage:Boolean = true;
+		private var fitToPage:Boolean = false;
 		
 		// After lots of trial and error on why synching doesn't work properly, I found I had to 
 		// multiply the coordinates by 2. There's something I don't understand probably on the

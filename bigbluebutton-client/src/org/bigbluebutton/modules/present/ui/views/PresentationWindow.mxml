@@ -263,7 +263,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				fitSlideToWindowMaintainingAspectRatio();
 			}
 			
-			[Bindable] private var fitToPage:Boolean = true;
+			[Bindable] private var fitToPage:Boolean = false;
 			
 			private function fitSlideToWindowMaintainingAspectRatio():void {
 				if (this.minimized) return;
