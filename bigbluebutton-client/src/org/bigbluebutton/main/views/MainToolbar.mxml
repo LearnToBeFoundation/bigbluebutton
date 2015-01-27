@@ -63,6 +63,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.main.model.users.events.ConferenceCreatedEvent;
       import org.bigbluebutton.main.model.users.events.ConnectionFailedEvent;
       import org.bigbluebutton.util.i18n.ResourceUtil;
+      import org.bigbluebutton.core.UsersUtil;
+      import flash.events.TimerEvent;
+      import flash.utils.Timer;
 
 			private var DEFAULT_HELP_URL:String = "http://www.bigbluebutton.org/content/videos";
 			
@@ -334,6 +337,16 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
         }
       }
 
+      private function onLogoutCreateComplete():void {
+      	var myTimer:Timer = new Timer(2000, 1); // 1 second
+				myTimer.addEventListener(TimerEvent.TIMER, runOnce);
+				myTimer.start();
+			}
+
+			function runOnce(event:TimerEvent):void {
+				btnLogout.visible = UsersUtil.amIModerator();
+      	btnLogout.enabled = UsersUtil.amIModerator();
+			}
 		]]>
 	</mx:Script>
     
@@ -372,5 +385,5 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				   accessibilityDescription="{ResourceUtil.getInstance().getString('bbb.mainToolbar.helpBtn')}"/>
 	<mx:Button label="" id="btnLogout" styleName="logoutButtonStyle"
                  toolTip="{ResourceUtil.getInstance().getString('bbb.mainToolbar.logoutBtn.toolTip')}" right="10" click="confirmLogout()" height="22"
-                 tabIndex="{baseIndex+numButtons+15}" />
+                 tabIndex="{baseIndex+numButtons+15}" creationComplete="onLogoutCreateComplete()"/>
 </mx:ApplicationControlBar>
