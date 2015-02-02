@@ -1,0 +1,31 @@
+<mx:Button xmlns:mx="http://www.adobe.com/2006/mxml"
+           width="30" height="30"
+           click="onClick()" styleName="whiteboardEraserButtonStyle"
+		   toolTip="Eraser"
+		   toggle="true"
+		   accessibilityName="Eraser">
+	<mx:Script>
+		<![CDATA[
+			import org.bigbluebutton.modules.whiteboard.business.shapes.DrawObject;
+            import org.bigbluebutton.modules.whiteboard.business.shapes.WhiteboardConstants;
+            import org.bigbluebutton.modules.whiteboard.events.WhiteboardButtonEvent;
+            import org.bigbluebutton.util.i18n.ResourceUtil;
+						
+            private function onClick():void {
+                var event:WhiteboardButtonEvent = new WhiteboardButtonEvent(WhiteboardButtonEvent.WHITEBOARD_BUTTON_PRESSED);
+				event.graphicType = WhiteboardConstants.TYPE_SHAPE;
+				event.toolType = DrawObject.ERASER;
+				
+				dispatchEvent(event);
+            }
+            
+            public function setTool(gType:String, toolType:String):void {
+                if(gType == WhiteboardConstants.TYPE_SHAPE && toolType == DrawObject.ERASER) {
+                    this.selected = true;
+                } else {
+                    this.selected = false;
+                } 					
+            }            
+		]]>
+	</mx:Script>
+</mx:Button>

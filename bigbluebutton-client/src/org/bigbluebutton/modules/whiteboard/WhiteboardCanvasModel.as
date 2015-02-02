@@ -76,7 +76,7 @@ package org.bigbluebutton.modules.whiteboard
     private var sendShapeFrequency:uint = 30;	
 
     /* same as above, except a faster interval may be desirable when erasing, for aesthetics */
-    private var sendEraserFrequency:uint = 20;	
+    private var sendEraserFrequency:uint = 15;	
 
     private var width:Number;
     private var height:Number;
