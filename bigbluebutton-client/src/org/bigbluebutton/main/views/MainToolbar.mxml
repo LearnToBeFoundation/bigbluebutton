@@ -97,7 +97,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				numButtons = 0;
                 
                 // Accessibility isn't active till a few second after the client starts to load so we need a delay
-                var timer:Timer = new Timer(3000, 1);
+                var timer:Timer = new Timer(6000, 1);
                 timer.addEventListener(TimerEvent.TIMER, checkAccessiblity);
                 timer.start();
 
