@@ -120,6 +120,12 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
         if (!Accessibility.active) {
           quickLinks.removeAllChildren();
         }
+
+        if(!UsersUtil.amIModerator()) {
+					LogUtil.debug("@@@NOT MODERATOR!!!!!!!!!!!!!");
+					btnLogout.visible = false;
+					btnLogout.enabled = false;
+				}
       }
       
       private function onQuickLinkClicked(window:String):void {
@@ -336,17 +342,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           } 
         }
       }
-
-      private function onLogoutCreateComplete():void {
-      	var myTimer:Timer = new Timer(2000, 1); // 1 second
-				myTimer.addEventListener(TimerEvent.TIMER, runOnce);
-				myTimer.start();
-			}
-
-			function runOnce(event:TimerEvent):void {
-				btnLogout.visible = UsersUtil.amIModerator();
-      	btnLogout.enabled = UsersUtil.amIModerator();
-			}
 		]]>
 	</mx:Script>
     
@@ -385,5 +380,5 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				   accessibilityDescription="{ResourceUtil.getInstance().getString('bbb.mainToolbar.helpBtn')}"/>
 	<mx:Button label="" id="btnLogout" styleName="logoutButtonStyle"
                  toolTip="{ResourceUtil.getInstance().getString('bbb.mainToolbar.logoutBtn.toolTip')}" right="10" click="confirmLogout()" height="22"
-                 tabIndex="{baseIndex+numButtons+15}" creationComplete="onLogoutCreateComplete()"/>
+                 tabIndex="{baseIndex+numButtons+15}"/>
 </mx:ApplicationControlBar>
