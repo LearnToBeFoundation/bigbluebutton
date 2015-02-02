@@ -65,8 +65,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private var toolType:String = DrawObject.PENCIL;
 			private var whiteboardEnabled:Boolean = false;
 			private var showWhiteboard:Boolean = true;
-          	private var isMultidrawEnabled:Boolean = true;
-
+    	private var isMultidrawEnabled:Boolean = true;
+    	public var isEraserTool:Boolean = false;
+    	
 			private function init():void {
 				this.label = "Highlighter";
                 registerForMouseEvents();
@@ -144,8 +145,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				model.setGraphicType(type);
 			}
 			
-			public function setTool(s:String):void {
-                if (model == null) return;
+			public function setTool(s:String, toolIsEraser:Boolean):void {
+        if (model == null) return;
+				isEraserTool = toolIsEraser;
+				if(isEraserTool) {
+					s = DrawObject.PENCIL;
+					model.changeColor(0xFFFFFF);
+				}
 				model.setTool(s);
 				toolType = s;
 			}
