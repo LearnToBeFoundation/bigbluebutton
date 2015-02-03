@@ -41,6 +41,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
   
 	<mx:Script>
 		<![CDATA[
+			import mx.collections.ArrayCollection;	
       import com.asfusion.mate.events.Dispatcher;     
       import mx.accessibility.AlertAccImpl;
       import mx.controls.Alert;
@@ -62,6 +63,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       import org.bigbluebutton.main.model.LayoutOptions;
       import org.bigbluebutton.main.model.users.events.ConferenceCreatedEvent;
       import org.bigbluebutton.main.model.users.events.ConnectionFailedEvent;
+      import org.bigbluebutton.main.model.users.events.KickUserEvent;
       import org.bigbluebutton.util.i18n.ResourceUtil;
       import org.bigbluebutton.core.UsersUtil;
       import flash.events.TimerEvent;
@@ -214,7 +216,14 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			private function alertLogout(e:CloseEvent):void {
 				// Check to see if the YES button was pressed.
 				if (e.detail==Alert.YES) {
-					 doLogout();
+					var timer:Timer = new Timer(2000, 1);
+	        timer.addEventListener(TimerEvent.TIMER, function() : void {
+						LogUtil.debug("F@@@ logout in MainToolbar");
+				  	doLogout();
+					});
+
+          timer.start();
+					kickOutStudent();
 				}
 			}
 			
@@ -222,6 +231,18 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				dispatchEvent(new LogoutEvent(LogoutEvent.USER_LOGGED_OUT));
 			}
 			
+			private function kickOutStudent():void {
+        var ids:ArrayCollection = UsersUtil.getUserIDs();
+        LogUtil.debug("!!!!!!!!!!My id: " + UsersUtil.getMyUserID());
+        for(var i:int = 0; i < ids.length; i++) {
+          var currId:String = ids.getItemAt(i) as String;
+          if(currId != UsersUtil.getMyUserID()) {
+            LogUtil.debug("!!!!!!!!!! Kicking " + currId);
+            dispatchEvent(new KickUserEvent(currId));
+          }
+        }
+			}
+
 			private function hideToolbar(e:ConnectionFailedEvent):void{
 				if (toolbarOptions.showToolbar) {
 					this.visible = false;
