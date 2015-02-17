@@ -738,7 +738,9 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 	<mx:Fade id="thumbFadeIn" alphaFrom="1" alphaTo="0" duration="100" />
 	<mx:Fade id="thumbFadeOut" alphaFrom="0" alphaTo="1" duration="100" />
 
-	<mx:VBox id="mainContainer">
+	<mx:VBox id="mainContainer" horizontalCenter="0"
+	verticalScrollPolicy="off" 
+	horizontalScrollPolicy="off">
 		<mx:TabNavigator id="tn"  width="100%" change="switchPresTab(event);" 
 	        paddingTop="0"
             paddingLeft="0"
