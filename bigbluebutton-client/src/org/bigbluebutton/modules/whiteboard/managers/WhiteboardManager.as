@@ -45,7 +45,8 @@ package org.bigbluebutton.modules.whiteboard.managers
 	import org.bigbluebutton.modules.whiteboard.views.SimwriteToolbarButton;
 	import org.bigbluebutton.core.UsersUtil;
     import org.bigbluebutton.common.events.ToolbarButtonEvent;
-
+	import org.bigbluebutton.modules.whiteboard.views.models.WhiteboardOptions;
+	
 	public class WhiteboardManager
 	{
     private static const LOG:String = "WB::WhiteboardManager - ";
@@ -62,9 +63,11 @@ package org.bigbluebutton.modules.whiteboard.managers
 		private var displayModel:WhiteboardCanvasDisplayModel = new WhiteboardCanvasDisplayModel();
         
 		private var simwriteBtn:SimwriteToolbarButton = new SimwriteToolbarButton();
+		private var wbOptions:WhiteboardOptions;
 
 		public function WhiteboardManager() {
 			globalDispatcher = new Dispatcher();
+			wbOptions = new WhiteboardOptions();
 		}
 		
 		public function handleStartModuleEvent():void {	
@@ -91,7 +94,9 @@ package org.bigbluebutton.modules.whiteboard.managers
 			textToolbar.init();
 			highlighterCanvas.textToolbar = textToolbar;
 
-            addToolbarButton();
+      if(UsersUtil.amIModerator() && wbOptions.whiteboardAccess == "all") {
+      	addSimwriteToolbarButton();
+      }
 
 			//Necessary now because of module loading race conditions
 			var t:Timer = new Timer(1000, 1);
@@ -99,19 +104,8 @@ package org.bigbluebutton.modules.whiteboard.managers
 			t.start();
 		}
 		
-		private function displayToolbarButton():void {
-		    simwriteBtn.isModerator = true;
-
-			if (UsersUtil.amIModerator()) {
-			  simwriteBtn.isModerator = true;
-			} else {
-			  simwriteBtn.isModerator = false;
-			}
-		}
-		
-		private function addToolbarButton():void {
+		private function addSimwriteToolbarButton():void {
 		  LogUtil.debug("****************** Adding toolbar simwriteBtn. presenter?=[" + UsersUtil.amIPresenter() + "]");
-			displayToolbarButton();
 
 			var event:ToolbarButtonEvent = new ToolbarButtonEvent(ToolbarButtonEvent.ADD);
 			event.button = simwriteBtn;
@@ -182,7 +176,7 @@ package org.bigbluebutton.modules.whiteboard.managers
 		
 		public function toggleMultidraw(e:SimwriteEvent):void {
 			if(e.type != SimwriteEvent.SIMWRITE_CHANGED_CALLBACK) return;
-			displayToolbarButton();
+			//displayToolbarButton();
 		}
 	}
 }

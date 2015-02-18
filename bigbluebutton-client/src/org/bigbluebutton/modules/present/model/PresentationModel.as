@@ -84,7 +84,16 @@ package org.bigbluebutton.modules.present.model
       
       return null;
     }
-    
+
+    public function getCurrentPresentationIndex():int {
+      for (var i:int = 0; i < _presentations.length; i++) {
+        var pres:Presentation = _presentations.getItemAt(i) as Presentation;
+        if (pres.current) return i;
+      }   
+      
+      return -1;
+    }
+
     public function getPresentations():ArrayCollection {
       var presos:ArrayCollection = new ArrayCollection();
       
