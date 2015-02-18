@@ -28,7 +28,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 		   click = "handleClick(event)"
            height="24"
 		   toolTip="{this.selected ? drawOffTooltip : drawOnTooltip}"
-		   visible="false"
+		   visible="true"
 		   implements="org.bigbluebutton.common.IBbbToolbarComponent">
 
 	<!--<mate:Listener type="{ShortcutEvent.SHARE_WEBCAM}" method="remoteClick" />-->
@@ -56,7 +56,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			[Bindable] private var drawOffTooltip:String = "Turn off multi-draw";
 			
 			private var dispatcher:Dispatcher;
-			
+
 			private function init():void {
 				dispatcher = new Dispatcher();
 				this.toolTip = drawOnTooltip;
@@ -65,11 +65,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				this.selected = true;
 				_currentState = true;
 			}
-			
-		  public function set isModerator(moderator:Boolean):void {
-			visible = moderator;
-			includeInLayout = moderator;
-		  }
 
 			private function mouseOverHandler(event:MouseEvent):void {
 				if(_currentState == true)
