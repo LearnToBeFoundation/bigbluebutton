@@ -405,7 +405,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
             }
 
             private function handlePresentationRemoved(e:RemovePresentationEvent):void {
-            	LogUtil.debug("@@@removing presentation tab");
+            	LogUtil.debug("@@@ REMOVING PRES TAB");
             	syncTabs();
 
             	var t:Timer = new Timer(750, 1);
@@ -414,7 +414,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
             }
 
             private function updatePresTabs():void {
-            	LogUtil.debug("@@@ UPDATING PRES TABS");
             	presTabsData = PresentationModel.getInstance().getPresentations();
 
             	tn.removeAllChildren();
@@ -422,7 +421,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
             		var vbox:VBox = new VBox();
 								vbox.label = (presTabsData.getItemAt(i) as Presentation).name;
 								tn.addChild(vbox);
-								LogUtil.debug("@@@ ADDING TAB: " + vbox.label);
+								//LogUtil.debug("@@@ ADDING TAB: " + vbox.label);
             	}
             }
 			
@@ -442,16 +441,14 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       }
 
       private function switchPresTab(event:Event):void {
-		    var presSelectedName:String = (tn.getTabAt(event.currentTarget.selectedIndex) as Button).label;
-		    LogUtil.debug("@@@CLICK SWTICH PRES TO " + presSelectedName + " FROM " + PresentationModel.getInstance().getCurrentPresentationName());
-
         if (event.currentTarget.selectedIndex == PresentationModel.getInstance().getCurrentPresentationIndex()) {
         	LogUtil.debug("@@@SELECTED PRES IS CURRENT PRES...exiting");
         	return; 
         }
 
+        var presSelectedName:String = (tn.getTabAt(event.currentTarget.selectedIndex) as Button).label;
         var presSelectedID:String = presTabsData.getItemAt(event.currentTarget.selectedIndex).id;
-				LogUtil.debug("@@@SWITCH TO TAB PRES - name: " + presSelectedName + ", id: " + presSelectedID);
+				LogUtil.debug("@@@SWITCH TO TAB PRES - name: " + presSelectedName + ", id: " + presSelectedID + " FROM " + PresentationModel.getInstance().getCurrentPresentationName());
 
 				//  dispatch event to switch to the selected tab
 		    var changePresCommand:ChangePresentationCommand = new ChangePresentationCommand(presSelectedID);

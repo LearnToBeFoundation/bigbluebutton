@@ -135,7 +135,7 @@ package org.bigbluebutton.modules.whiteboard
             }
               
               if(o.status == DrawObject.DRAW_END) {
-                LogUtil.debug("@@@ NUMBER OF ANNOTATIONS: " + _annotationsList.length);
+                //LogUtil.debug("@@@ NUMBER OF ANNOTATIONS: " + _annotationsList.length);
               }           
             break;
         }                   
@@ -146,8 +146,8 @@ package org.bigbluebutton.modules.whiteboard
                    
     // Draws a TextObject when/if it is received from the server
     private function drawText(o:Annotation):void {
-      LogUtil.debug("@@@ WB CANVAS: DRAWING TEXT!!!!!");
-      LogUtil.debug("@@@ TeXT RECEIVED: "  + o.annotation["originatorID"] + " " + (o.annotation["originatorID"] == UsersUtil.getMyUserID()));
+      //LogUtil.debug("@@@ WB CANVAS: DRAWING TEXT!!!!!");
+      //LogUtil.debug("@@@ TeXT RECEIVED: "  + o.annotation["originatorID"] + " " + (o.annotation["originatorID"] == UsersUtil.getMyUserID()));
       var presTextFlag:Boolean = (isMultidrawEnabled) ? (o.annotation["originatorID"] == UsersUtil.getMyUserID()) : isPresenter; 
       switch (o.status) {
         case TextObject.TEXT_CREATED:
@@ -431,7 +431,7 @@ package org.bigbluebutton.modules.whiteboard
        further and so that only the presenter can edit it.
     */
     public function makeTextObjectsUneditable(e:MadePresenterEvent):void {
-      LogUtil.debug("MADE PRESENTER IS PRESENTER FALSE");
+      //LogUtil.debug("MADE PRESENTER IS PRESENTER FALSE");
 //      var texts:Array = getAllTexts();
 //      for(var i:int = 0; i < texts.length; i++) {
 //        (texts[i] as TextObject).makeEditable(false);
