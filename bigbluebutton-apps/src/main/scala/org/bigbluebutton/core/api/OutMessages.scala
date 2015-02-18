@@ -204,7 +204,7 @@ case class UserJoined(
     meetingID: String, 
     recorded: Boolean, 
     user:UserVO,
-  version:String = Versions.V_0_0_1
+    version:String = Versions.V_0_0_1
 ) extends IOutMessage
                       
 case class UserRaisedHand(
@@ -647,7 +647,7 @@ case class IsWhiteboardEnabledReply(
     replyTo: String,
     version:String = Versions.V_0_0_1
 ) extends IOutMessage
-                       
+         
 case class ToggleMultidrawEvent(
     meetingID: String, 
     recorded: Boolean, 
@@ -662,6 +662,11 @@ case class SimwriteStateReply(
     requesterID: String,
     multidrawState: Boolean,
     replyTo: String,
+    version:String = Versions.V_0_0_1
+) extends IOutMessage
+
+case class GetAllMeetingsReply(
+    meetings: Array[MeetingInfo],
     version:String = Versions.V_0_0_1
 ) extends IOutMessage
 
