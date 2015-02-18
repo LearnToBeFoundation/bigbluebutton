@@ -221,6 +221,8 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 					slideModel.displayPresenterView();
 					slideModel.printViewedRegion();
 					fitSlideToLoader();
+					//LogUtil.debug("this width: " + this.width + ", parentW: " + slideModel.parentW);
+					adjustThumbnailView();
 					notifyOthersOfZoomEvent();
 				} else {          
           var page:Page = PresentationModel.getInstance().getCurrentPage();
@@ -230,7 +232,15 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           }
 				}				
 			}
-											
+			
+			public function adjustThumbnailView():void {
+				if(!thumbnailView.visible) return;
+
+				if(slideModel.parentW > this.width)
+					thumbnailView.y = this.height - 130;
+				else
+					thumbnailView.y = this.height - 100;
+			}				
 			/**
 			 * Fit the slide inside the loader.
 			 */			
@@ -532,6 +542,6 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
    		
    <mx:HorizontalList id="thumbnailView" itemRenderer="org.bigbluebutton.modules.present.ui.views.Thumbnail" 
     	                 visible="false" width="100%" height="100" 
-                       y="{this.height - 130}" change="changeSlide()" />
+                       y="{this.height - 100}" change="changeSlide()" />
 		      		 
 </mx:Canvas>
