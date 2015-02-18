@@ -30,17 +30,19 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
             import org.bigbluebutton.util.i18n.ResourceUtil;
 			import mx.events.CloseEvent;
             import mx.controls.Alert;
+	    import mx.core.FlexGlobals;
+		
             
             private function onClick():void {
                 // Confirm clear using built-in alert
-                var alert:Alert = Alert.show("Are you sure you want to clear the whiteboard?", "Confirm clear", Alert.YES | Alert.NO, this, 
-                    alertClear, null, Alert.YES);
+                var alert:Alert = Alert.show("Are you sure you want to clear the whiteboard?", "Confirm clear", Alert.YES | Alert.NO, FlexGlobals.topLevelApplication as Sprite, alertClear, null, Alert.YES);
                 
                 /*var newX:Number = this.x + this.width - alert.width;
                 var newY:Number = this.y + this.height + 5;*/
                                             
                 alert.validateNow();
                 //alert.move(newX, newY);
+		//PopUpManager.centerPopUp(alert);
             }
 
             private function alertClear(e:CloseEvent):void {
