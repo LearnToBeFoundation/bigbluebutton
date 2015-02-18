@@ -436,37 +436,24 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			}
 			
 			private function selectCurrPresTab():void {
-				var idx:Number = -1;
-				for(var i:Number = 0; i < tn.numChildren; i++) {
-					var btn:Button = tn.getTabAt(i) as Button;
-					if(btn.label == PresentationModel.getInstance().getCurrentPresentationName()) {
-						idx = i; 
-						break;
-					}
-				}
+				var idx:Number = PresentationModel.getInstance().getCurrentPresentationIndex();
+
 				if(idx != -1)
           tn.selectedIndex = idx;
       }
 
       private function switchPresTab(event:Event):void {
-		    var comp:Button = tn.getTabAt(event.currentTarget.selectedIndex) as Button;
-		    var presSelectedName:String = comp.label;
-		    LogUtil.debug("@@@CLICK SWTICH PRES TO " + comp.label + " FROM " + PresentationModel.getInstance().getCurrentPresentationName());
-        if (presSelectedName == PresentationModel.getInstance().getCurrentPresentationName()) {
+		    var presSelectedName:String = (tn.getTabAt(event.currentTarget.selectedIndex) as Button).label;
+		    LogUtil.debug("@@@CLICK SWTICH PRES TO " + presSelectedName + " FROM " + PresentationModel.getInstance().getCurrentPresentationName());
+
+        if (event.currentTarget.selectedIndex == PresentationModel.getInstance().getCurrentPresentationIndex()) {
         	LogUtil.debug("@@@SELECTED PRES IS CURRENT PRES...exiting");
         	return; 
         }
-        LogUtil.debug("@@@STARTING SWITCH");
 
-        // find ID of the presentation with the same name as the selected tab's name
-        var presSelectedID:String;
-       	for(var i:int = 0; i < presTabsData.length; i++) {
-					if(presSelectedName == presTabsData.getItemAt(i).name) {
-						presSelectedID = presTabsData.getItemAt(i).id;
-					}
-				}
-
+        var presSelectedID:String = presTabsData.getItemAt(event.currentTarget.selectedIndex).id;
 				LogUtil.debug("@@@SWITCH TO TAB PRES - name: " + presSelectedName + ", id: " + presSelectedID);
+
 				//  dispatch event to switch to the selected tab
 		    var changePresCommand:ChangePresentationCommand = new ChangePresentationCommand(presSelectedID);
 	      dispatchEvent(changePresCommand);
@@ -474,13 +461,13 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 		    toggleTabs(false);
 			}
 			
-		    private function toggleTabs(toggle:Boolean):void {
+	    private function toggleTabs(toggle:Boolean):void {
 				for(var i:Number = 0; i < tn.numChildren; i++) {
 					var btn:Button = tn.getTabAt(i) as Button;
 					btn.enabled = toggle;
-	            }
-		    }
-		    //////////////////////////////// END TABS METHODS ////////////////////////////////////
+        }
+	    }
+	    //////////////////////////////// END TABS METHODS ////////////////////////////////////
 		    
 			private function displaySlideNavigationControls(isPresenter:Boolean, activePresentation:Boolean):void {
 				var showButtons:Boolean = isPresenter && activePresentation;
