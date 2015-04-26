@@ -289,7 +289,7 @@ package org.bigbluebutton.common
 		[Embed(source="assets/images/transparency_icon.png")]
 		public var transparency_icon:Class;	
 		
-		[Embed(source="assets/images/eraser.png")]
+		[Embed(source="assets/images/eraser_icon.png")]
 		public var eraser_icon:Class;	
 		
 		[Embed(source="assets/images/highlighter_icon.png")]

@@ -178,41 +178,42 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           canvas.setTool(toolType, isEraserTool);
         
            if (panzoomBtn != null) {
-                        panzoomBtn.setTool(graphicType, toolType);
-                    }
-                    
-                    if (scribbleBtn != null) {
-                        scribbleBtn.setTool(graphicType, toolType); 
-                    }
-                    
-                    if (eraserBtn != null) {
-                        eraserBtn.setTool(graphicType, toolType); 
-                    }
+                  panzoomBtn.setTool(graphicType, toolType);
+              }
+              
+              if (scribbleBtn != null) {
+                  scribbleBtn.setTool(graphicType, toolType); 
+              }
+              
+              if (eraserBtn != null) {
+                  eraserBtn.setTool(graphicType, toolType); 
+              }
 
-                    if (rectangleBtn != null) {
-                        rectangleBtn.setTool(graphicType, toolType); 
-                    }
-                    
-                    if (circleBtn != null) {
-                        circleBtn.setTool(graphicType, toolType);
-                    }
-                    
-                    if (triangleBtn != null) {
-                        triangleBtn.setTool(graphicType, toolType);
-                    }
-                    
-                    if (lineBtn != null) {
-                        lineBtn.setTool(graphicType, toolType);
-                    }
-                    
-                    if (textBtn != null) {
-                        textBtn.setTool(graphicType, toolType);
-                    }
-                }
-            }
+              if (rectangleBtn != null) {
+                  rectangleBtn.setTool(graphicType, toolType); 
+              }
+              
+              if (circleBtn != null) {
+                  circleBtn.setTool(graphicType, toolType);
+              }
+              
+              if (triangleBtn != null) {
+                  triangleBtn.setTool(graphicType, toolType);
+              }
+              
+              if (lineBtn != null) {
+                  lineBtn.setTool(graphicType, toolType);
+              }
+              
+              if (textBtn != null) {
+                  textBtn.setTool(graphicType, toolType);
+              }
+          }
+      }
             
             protected function changeColor(e:Event):void {
                 canvas.changeColor(e);
+                lastColor = e.target.selectedColor;
 			}
 			
 			protected function changeFillColor(e:Event):void {

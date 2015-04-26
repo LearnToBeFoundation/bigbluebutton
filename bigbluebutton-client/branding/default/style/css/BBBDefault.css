@@ -209,6 +209,10 @@ DataGrid {
   icon: Embed('assets/images/triangle.png');    
 }
 
+.whiteboardEraserButtonStyle {
+  icon: Embed('assets/images/eraser_icon.png');
+}
+
 .voiceConfDefaultButtonStyle {
   icon: Embed('assets/images/headset.png');    
 }
