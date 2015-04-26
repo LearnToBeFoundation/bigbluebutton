@@ -133,7 +133,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 			public var canvas:WhiteboardCanvas;
 			private var presentationWindow:PresentationWindow;
 			private var lastColor:int = 0x0088FF;
-      
+     			private var lastThickness:int = 2; 
       [Bindable] private var colorPickerColours:Array = ['0x000000', '0xFFFFFF' , '0xFF0000', '0xFF8800',
                 '0xCCFF00', '0x00FF00', '0x00FF88', '0x00FFFF', '0x0088FF', '0x0000FF', '0x8800FF', '0xFF00FF', '0xC0C0C0'];
 			
@@ -168,10 +168,15 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
           if(toolType == DrawObject.ERASER) {
             cpik.enabled = false;
             isEraserTool = true;
+	    lastThickness = sld.value;
+	    canvas.model.changeThickness(8);
+	    sld.value = 8;
           } else {
             cpik.enabled = true;
             isEraserTool = false;
             canvas.model.changeColor(lastColor);
+	    canvas.model.changeThickness(lastThickness);
+	    sld.value = lastThickness;
           }
 
           canvas.setGraphicType(graphicType);
