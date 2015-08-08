@@ -225,7 +225,10 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 				} else if(toolType == DrawObject.TRIANGLE) {
 					CursorManager.setCursor(triangle_icon, 2, -7, 0);
 				} else if(toolType == DrawObject.PENCIL) {
-					CursorManager.setCursor(pencil_icon, 2, 0, -16);
+					if(isEraserTool)
+						CursorManager.setCursor(eraser_icon, 2, 0, -12);
+					else
+						CursorManager.setCursor(pencil_icon, 2, 0, -16);
 				} else if(toolType == DrawObject.LINE) {
 					CursorManager.setCursor(line_icon, 2, 0, -14);
 				} else if(toolType == DrawObject.HIGHLIGHTER) {

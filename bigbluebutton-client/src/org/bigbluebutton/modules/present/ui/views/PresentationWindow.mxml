@@ -584,6 +584,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
       
       private function showThumbnails():void{
         slideView.thumbnailView.visible = !slideView.thumbnailView.visible;
+        slideView.adjustThumbnailView();
       }
       
       private function addOverlayCanvas(e:AddOverlayCanvasEvent):void{

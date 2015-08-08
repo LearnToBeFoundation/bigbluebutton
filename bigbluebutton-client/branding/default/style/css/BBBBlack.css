@@ -132,6 +132,10 @@ DataGrid {
   icon: Embed('assets/images/pencil.png');  
 }
 
+.whiteboardEraserButtonStyle {
+  icon: Embed('assets/images/eraser_icon.png');  
+}
+
 .whiteboardLineButtonStyle {
   icon: Embed('assets/images/line.png');    
 }
