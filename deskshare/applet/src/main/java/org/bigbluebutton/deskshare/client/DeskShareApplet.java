@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.security.*;
 import java.awt.Image;
+import netscape.javascript.*;
 
 public class DeskShareApplet extends JApplet implements ClientListener {
 	public static final String NAME = "DESKSHAREAPPLET: ";
@@ -35,6 +36,7 @@ public class DeskShareApplet extends JApplet implements ClientListener {
 	  String hostValue = "localhost";
 	  String minJreVersion = "1.7.0_51";
     Integer portValue = new Integer(9123);
+	Boolean useTLS = false;
     String roomValue = "85115";
     Integer cWidthValue = new Integer(800);
     Integer cHeightValue = new Integer(600);
@@ -77,6 +79,14 @@ public class DeskShareApplet extends JApplet implements ClientListener {
 		if (port != null) portValue = Integer.parseInt(port);
 		roomValue = getParameter("ROOM");
 
+		String getUseTLS = getParameter("useTLS");
+		if(getUseTLS != null) useTLS = Boolean.parseBoolean(getUseTLS);
+		if(useTLS){
+			//Change port if useTLS is true
+			//Better to place it here than the client if we want to assure that TLS is forced
+			portValue = 443;
+		}
+		
 		String scaleValue = getParameter("SCALE");
 		if (scaleValue != null) scale = Double.parseDouble(scaleValue);
 		
@@ -94,8 +104,16 @@ public class DeskShareApplet extends JApplet implements ClientListener {
 			icon = ImageIO.read(url);
 		} catch (IOException e) {
 		}
+		
+		// Callback to JavaScript
+		try {
+			JSObject window = JSObject.getWindow(this);
+			window.call("appletStartupCallback", new Object[]{});
+		} catch (JSException jse) {
+			jse.printStackTrace();
+		}
 	}
-	 
+	
 	private String getJavaVersionRuntime() {
 		return System.getProperty("java.version");
 	}
@@ -138,7 +156,7 @@ public class DeskShareApplet extends JApplet implements ClientListener {
 
 	
 	private void allowDesktopSharing() {
-		client = new DeskshareClient.NewBuilder().host(hostValue).port(portValue)
+		client = new DeskshareClient.NewBuilder().host(hostValue).port(portValue).useTLS(useTLS)
 				.room(roomValue).captureWidth(cWidthValue)
 				.captureHeight(cHeightValue).scaleWidth(sWidthValue).scaleHeight(sHeightValue)
 				.quality(qualityValue).autoScale(scale)
@@ -183,7 +201,9 @@ public class DeskShareApplet extends JApplet implements ClientListener {
 	}
 	
 	public void onClientStop(ExitCode reason) {
-		// determine if client is disconnected _PTS_272_
+	  client.stop();
+	  
+		/*
 		if ( ExitCode.CONNECTION_TO_DESKSHARE_SERVER_DROPPED == reason ){
 			JFrame pframe = new JFrame("Desktop Sharing Disconneted");
 			if ( null != pframe ){
@@ -197,6 +217,7 @@ public class DeskShareApplet extends JApplet implements ClientListener {
 		}else{
 			client.stop();
 		}	
+		*/
 	}
 	
 }

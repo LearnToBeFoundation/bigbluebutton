@@ -20,7 +20,8 @@ package org.bigbluebutton.main.model.users {
 	import mx.collections.ArrayCollection;
 	import mx.collections.Sort;
 	
-	import org.bigbluebutton.common.LogUtil;
+	import org.as3commons.logging.api.ILogger;
+	import org.as3commons.logging.api.getClassLogger;
 	import org.bigbluebutton.common.Role;
 	import org.bigbluebutton.core.BBB;
 	import org.bigbluebutton.core.model.Config;
@@ -37,7 +38,7 @@ package org.bigbluebutton.main.model.users {
 	  public var dialNumber:String;
 	  [Bindable] public var record:Boolean;
     
-    private static const LOG:String = "main.model.users::Conference - ";
+	  private static const LOGGER:ILogger = getClassLogger(Conference);
     
 	  private var lockSettings:LockSettingsVO;
 	
@@ -112,16 +113,18 @@ package org.bigbluebutton.main.model.users {
 		}
 
 		public function addUser(newuser:BBBUser):void {
-			trace("Adding new user [" + newuser.userID + "]");
-			if (! hasUser(newuser.userID)) {
-				trace("Am I this new user [" + newuser.userID + ", " + me.userID + "]");
-				if (newuser.userID == me.userID) {
-					newuser.me = true;
-				}						
-				
-				users.addItem(newuser);
-				users.refresh();
-			}					
+			LOGGER.debug("Adding new user [{0}]", [newuser.userID]);
+			if (hasUser(newuser.userID)) {
+				removeUser(newuser.userID);
+			} else {
+				LOGGER.debug("Am I this new user [{0}, {1}]", [newuser.userID,me.userID]);
+			}
+			if (newuser.userID == me.userID) {
+				newuser.me = true;
+			}
+			
+			users.addItem(newuser);
+			users.refresh();
 		}
 		
 		public function setCamPublishing(publishing:Boolean):void {
@@ -216,7 +219,7 @@ package org.bigbluebutton.main.model.users {
 		public function isUserPresenter(userID:String):Boolean {
 			var user:Object = getUserIndex(userID);
 			if (user == null) {
-				LogUtil.warn("User not found with id=" + userID);
+				LOGGER.warn("User not found with id={0}", [userID]);
 				return false;
 			}
 			var a:BBBUser = user.participant as BBBUser;
@@ -226,7 +229,7 @@ package org.bigbluebutton.main.model.users {
 		public function removeUser(userID:String):void {
 			var p:Object = getUserIndex(userID);
 			if (p != null) {
-				trace("removing user[" + p.participant.name + "," + p.participant.userID + "]");				
+				LOGGER.debug("removing user[{0},{1}]", [p.participant.name, p.participant.userID]);
 				users.removeItemAt(p.index);
 				//sort();
 				users.refresh();
@@ -394,10 +397,10 @@ package org.bigbluebutton.main.model.users {
       users.refresh();      
     }
     
-    public function unsharedWebcam(userId: String):void {
-      var aUser:BBBUser = getUser(userId);			
+    public function unsharedWebcam(userId: String, stream:String):void {
+      var aUser:BBBUser = getUser(userId);
       if (aUser != null) {
-        aUser.unsharedWebcam()
+        aUser.unsharedWebcam(stream);
       }	
       
       users.refresh();       
@@ -437,12 +440,13 @@ package org.bigbluebutton.main.model.users {
 		public function configLockSettings():void {
 			var config:Config = BBB.initConfigManager().config;
 			
-			var allowModeratorLocking:Boolean, 
-          disableCam:Boolean, 
-          disableMic:Boolean, 
-          disablePrivateChat:Boolean, 
-          disablePublicChat:Boolean, 
-          lockedLayout:Boolean;
+			var disableCam:Boolean,
+			disableMic:Boolean,
+			disablePrivateChat:Boolean,
+			disablePublicChat:Boolean,
+			lockedLayout:Boolean,
+			lockOnJoin:Boolean,
+			lockOnJoinConfigurable:Boolean;
 			
 			var lockConfig:XML;
 			
@@ -451,46 +455,52 @@ package org.bigbluebutton.main.model.users {
 			}
 			
 			try {
-				allowModeratorLocking = (lockConfig.@allowModeratorLocking.toUpperCase() == "TRUE");
-			} catch(e:Error) {
-				allowModeratorLocking = false;
-			}
-			
-			try {
 				disableCam = (lockConfig.@disableCamForLockedUsers.toUpperCase() == "TRUE");
 			} catch(e:Error) {
-				disableCam = false;
+				disableCam = false; //If not set, default to false
 			}
 			
 			try {
 				disableMic = (lockConfig.@disableMicForLockedUsers.toUpperCase() == "TRUE");
 			} catch(e:Error) {
-				disableMic = false;
+				disableMic = false; //If not set, default to false
 			}
 			
 			try {
 				disablePrivateChat = (lockConfig.@disablePrivateChatForLockedUsers.toUpperCase() == "TRUE");
 			} catch(e:Error) {
-				disablePrivateChat = false;
+				disablePrivateChat = false; //If not set, default to false
 			}
 			
 			try {
 				disablePublicChat = (lockConfig.@disablePublicChatForLockedUsers.toUpperCase() == "TRUE");
 			} catch(e:Error) {
-				disablePublicChat = false;
+				disablePublicChat = false; //If not set, default to false
 			}
 			
-      try {
-        lockedLayout = (lockConfig.@lockLayoutForLockedUsers.toUpperCase() == "TRUE");
-      } catch(e:Error) {
-        lockedLayout = false;
-      }
+			try {
+				lockedLayout = (lockConfig.@lockLayoutForLockedUsers.toUpperCase() == "TRUE");
+			} catch(e:Error) {
+				lockedLayout = false; //If not set, default to false
+			}
+			
+			try {
+				lockOnJoin = (lockConfig.@lockOnJoin.toUpperCase() == "TRUE");
+			} catch(e:Error) {
+				lockOnJoin = true; //If not set, default to true
+			}
+			
+			try {
+				lockOnJoinConfigurable = (lockConfig.@lockOnJoinConfigurable.toUpperCase() == "TRUE");
+			} catch(e:Error) {
+				lockOnJoinConfigurable = false; //If not set, default to false
+			}
+			
+			LOGGER.debug("init lock settings from config");
       
-      trace(LOG + " init lock settings from config");
-      
-			lockSettings = new LockSettingsVO(disableCam, disableMic, disablePrivateChat, disablePublicChat, lockedLayout);
-      
-      setLockSettings(lockSettings);
+			lockSettings = new LockSettingsVO(disableCam, disableMic, disablePrivateChat, disablePublicChat, lockedLayout, lockOnJoin, lockOnJoinConfigurable);
+			
+			setLockSettings(lockSettings);
 		}
 		
 		public function getMyUser():BBBUser {
@@ -513,14 +523,13 @@ package org.bigbluebutton.main.model.users {
 		
 		public function setLockSettings(lockSettings:LockSettingsVO):void {
 			this.lockSettings = lockSettings;
-      applyLockSettings();
+			applyLockSettings();
 		}
-    
-    public function applyLockSettings():void {
-      for (var i:int = 0; i < users.length; i++) {
-        var eachUser:BBBUser = users.getItemAt(i) as BBBUser;
-        eachUser.applyLockSettings();
-      }      
-    }
+		
+		public function applyLockSettings():void {
+			var myUser:BBBUser = getMyUser();
+			if(myUser != null)
+				myUser.applyLockSettings();
+		}
 	}
 }

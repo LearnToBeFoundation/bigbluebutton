@@ -20,21 +20,23 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 
 -->
 
-<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" verticalAlign="top" 
-		 verticalScrollPolicy="off" horizontalScrollPolicy="off" 
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"
+		 verticalAlign="top" verticalGap="0" paddingTop="0" paddingBottom="0"
+		 verticalScrollPolicy="off" horizontalScrollPolicy="off"
 		 xmlns:common="org.bigbluebutton.common.*">
 	
 	<mx:Script>
 		<![CDATA[
-			import mx.binding.utils.ChangeWatcher;
 			import mx.core.UITextField;
 			import mx.core.mx_internal;
 			
-			import org.bigbluebutton.common.LogUtil;
-			import org.bigbluebutton.modules.chat.model.ChatMessage;
+			import org.as3commons.logging.api.ILogger;
+			import org.as3commons.logging.api.getClassLogger;
 			
+			private static const LOGGER:ILogger = getClassLogger(ChatMessageRenderer);      
+
 			private function onLinkClick(e:TextEvent):void{
-        trace("Clicked on link[" + e.text + "] from chat");
+        LOGGER.debug("Clicked on link[{0}] from chat", [e.text]);
         if (ExternalInterface.available) {
           ExternalInterface.call("chatLinkClicked", e.text);
         } 
@@ -76,7 +78,7 @@ with BigBlueButton; if not, see <http://www.gnu.org/licenses/>.
 		]]>
 	</mx:Script>
 	
-  <mx:Canvas width="100%" id="hbHeader">
+  <mx:Canvas width="100%" id="hbHeader" verticalScrollPolicy="off" horizontalScrollPolicy="off">
     <mx:Label id="lblName" text="{data.name}" visible="true" color="gray" textAlign="left" left="0"/>
     <mx:Text id="lblTime" htmlText="{data.time}" textAlign="right"
              visible="true" 

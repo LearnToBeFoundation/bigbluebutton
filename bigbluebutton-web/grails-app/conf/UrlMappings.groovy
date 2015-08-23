@@ -24,6 +24,14 @@ class UrlMappings {
 		"/presentation/$conference/$room/$presentation_name/thumbnail/$id"(controller:"presentation") {
 			action = [GET:'showThumbnail']
 		}
+
+		"/presentation/$conference/$room/$presentation_name/svgs"(controller:"presentation") {
+			action = [GET:'numberOfSvgs']
+		}
+
+		"/presentation/$conference/$room/$presentation_name/svg/$id"(controller:"presentation") {
+			action = [GET:'showSvgImage']
+		}
 	  
 		"/presentation/$conference/$room/$presentation_name/textfiles"(controller:"presentation") {
 			action = [GET:'numberOfTextfiles']
@@ -42,11 +50,16 @@ class UrlMappings {
 		}
 
 		"/api/getMeetings"(controller:"api") {
-			action = [GET:'getMeetingsHandler']
+			action = [GET:'getMeetingsHandler', POST:'getMeetingsHandler']
 		}
-		
+	
+	
+        "/api/getSessions"(controller:"api") {
+            action = [GET:'getSessionsHandler', POST:'getSessionsHandler']
+        }
+        	
 		"/api/getRecordings"(controller:"api") {
-			action = [GET:'getRecordingsHandler']
+			action = [GET:'getRecordingsHandler', POST:'getRecordingsHandler']
 		}
 		
 		"/$controller/$action?/$id?(.${format})?"{

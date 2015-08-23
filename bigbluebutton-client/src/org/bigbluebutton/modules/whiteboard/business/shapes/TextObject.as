@@ -18,29 +18,14 @@
 */
 package org.bigbluebutton.modules.whiteboard.business.shapes
 {
-  import com.asfusion.mate.core.GlobalDispatcher;
-  
-  import flash.display.DisplayObject;
-  import flash.display.Shape;
-  import flash.display.Stage;
   import flash.events.Event;
   import flash.events.FocusEvent;
   import flash.events.KeyboardEvent;
-  import flash.events.MouseEvent;
   import flash.events.TextEvent;
   import flash.text.AntiAliasType;
   import flash.text.TextField;
   import flash.text.TextFieldType;
   import flash.text.TextFormat;
-  
-  import flashx.textLayout.edit.SelectionManager;
-  
-  import flexlib.scheduling.scheduleClasses.utils.Selection;
-  
-  import mx.controls.Text;
-  
-  import org.bigbluebutton.common.LogUtil;
-  import org.bigbluebutton.modules.whiteboard.WhiteboardCanvasModel;
 
   public class TextObject extends TextField implements GraphicObject {
     public static const TYPE_NOT_EDITABLE:String = "dynamic";
@@ -87,6 +72,9 @@ package org.bigbluebutton.modules.whiteboard.business.shapes
       _textBoxHeight = boxHeight;
       this.textSize = textSize;
       _calcedFontSize = calcedFontSize;
+	  
+	  this.mouseEnabled = false;
+	  this.mouseWheelEnabled = false;
     }  
     
     public function get id():String {

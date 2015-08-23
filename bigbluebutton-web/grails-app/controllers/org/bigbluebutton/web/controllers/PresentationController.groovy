@@ -21,9 +21,11 @@ package org.bigbluebutton.web.controllers
 import grails.converters.*
 import org.bigbluebutton.web.services.PresentationService
 import org.bigbluebutton.presentation.UploadedPresentation
+import org.bigbluebutton.api.MeetingService;
 import org.bigbluebutton.api.Util;
 
 class PresentationController {
+  MeetingService meetingService
   PresentationService presentationService
   
   def index = {
@@ -65,11 +67,19 @@ class PresentationController {
 
   def upload = {		
     println 'PresentationController:upload'
+
+    def meetingId = params.conference
+    def meeting = meetingService.getNotEndedMeetingWithId(meetingId);
+    if (meeting == null) {
+      println "Presentation uploaded to non-existant meeting ${meetingId}, ignoring"
+      flash.message = 'meeting is not running'
+      return [];
+    }
+
     def file = request.getFile('fileUpload')
 		if(file && !file.empty) {
 			flash.message = 'Your file has been uploaded'
 			
-			def meetingId = params.conference
 			def presFilename = file.getOriginalFilename()
 			def filenameExt = Util.getFilenameExt(presFilename);
       String presentationDir = presentationService.getPresentationDir()
@@ -134,7 +144,7 @@ class PresentationController {
     return null;
   }
   
-  def showPngImage = {
+  def showSvgImage = {
 	  def presentationName = params.presentation_name
 	  def conf = params.conference
 	  def rm = params.room
@@ -143,11 +153,11 @@ class PresentationController {
 	  InputStream is = null;
 	  try {
   //			def f = confInfo()
-		def pres = presentationService.showPngImage(conf, rm, presentationName, slide)
+		def pres = presentationService.showSvgImage(conf, rm, presentationName, slide)
 		if (pres.exists()) {
 		  def bytes = pres.readBytes()
 		  response.addHeader("Cache-Control", "no-cache")
-		  response.contentType = 'image/png'
+		  response.contentType = 'image/svg+xml'
 		  response.outputStream << bytes;
 		}
 	  } catch (IOException e) {
@@ -297,7 +307,28 @@ class PresentationController {
         }
       }		
   }
-  
+
+  def numberOfSvgs = {
+    def filename = params.presentation_name
+    def f = confInfo()
+    def numSvgs = presentationService.numberOfSvgs(f.conference, f.room, filename)
+      withFormat {
+        xml {
+          render(contentType:"text/xml") {
+            conference(id:f.conference, room:f.room) {
+              presentation(name:filename) {
+                svgs(count:numSvgs) {
+                  for (def i=0;i<numSvgs;i++) {
+                      svg(name:"svgs/${i}")
+                    }
+                }
+              }
+            }
+          }
+        }
+      }
+  }
+
   def numberOfTextfiles = {
 	  def filename = params.presentation_name
 	  def f = confInfo()

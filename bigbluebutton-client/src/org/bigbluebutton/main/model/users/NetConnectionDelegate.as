@@ -18,16 +18,25 @@
 */
 package org.bigbluebutton.main.model.users
 {
-	import com.adobe.protocols.dict.events.ErrorEvent;
 	import com.asfusion.mate.events.Dispatcher;
 	
-	import flash.events.*;
+	import flash.events.AsyncErrorEvent;
+	import flash.events.IOErrorEvent;
+	import flash.events.NetStatusEvent;
+	import flash.events.SecurityErrorEvent;
+	import flash.events.TimerEvent;
 	import flash.net.NetConnection;
 	import flash.net.Responder;
 	import flash.utils.Timer;
 	
-	import org.bigbluebutton.common.LogUtil;
+	import org.as3commons.logging.api.ILogger;
+	import org.as3commons.logging.api.getClassLogger;
+	import org.as3commons.logging.util.jsonXify;
+	import org.bigbluebutton.core.UsersUtil;
+	import org.bigbluebutton.core.managers.ReconnectionManager;
 	import org.bigbluebutton.core.services.BandwidthMonitor;
+	import org.bigbluebutton.main.api.JSLog;
+	import org.bigbluebutton.main.events.BBBEvent;
 	import org.bigbluebutton.main.events.InvalidAuthTokenEvent;
 	import org.bigbluebutton.main.model.ConferenceParameters;
 	import org.bigbluebutton.main.model.users.events.ConnectionFailedEvent;
@@ -35,7 +44,7 @@ package org.bigbluebutton.main.model.users
 		
 	public class NetConnectionDelegate
 	{
-		public static const LOG:String = "NetConnectionDelegate - ";
+		private static const LOGGER:ILogger = getClassLogger(NetConnectionDelegate);
 		
 		private var _netConnection:NetConnection;	
 		private var connectionId:Number;
@@ -58,6 +67,7 @@ package org.bigbluebutton.main.model.users
     private var _messageListeners:Array = new Array();
     
     private var authenticated: Boolean = false;
+    private var reconnecting:Boolean = false;
     
 		public function NetConnectionDelegate():void
 		{
@@ -100,71 +110,103 @@ package org.bigbluebutton.main.model.users
           _messageListeners[notify].onMessage(messageName, message);
         }                
       } else {
-        LogUtil.debug("Message name is undefined");
+		  LOGGER.debug("Message name is undefined");
       }
     }   
         
     public function onMessageFromServer(messageName:String, msg:Object):void {
-      trace(LOG + "Got message from server [" + messageName + "]"); 
+      LOGGER.debug("Got message from server [{0}] user=[{1}]", [messageName, UsersUtil.getMyUsername()]); 
       if (!authenticated && (messageName == "validateAuthTokenReply")) {
         handleValidateAuthTokenReply(msg)
+      } else if (messageName == "validateAuthTokenTimedOut") {
+        handleValidateAuthTokenTimedOut(msg)
       } else if (authenticated) {
         notifyListeners(messageName, msg);
       } else {
-        trace(LOG + "Ignoring message=[" + messageName + "] as our token hasn't been validated yet.");
+        LOGGER.debug("Ignoring message=[{0}] as our token hasn't been validated yet.", [messageName]);
       }     
     }
 		
     private function validateToken():void {
+      var message:Object = new Object();
+      message["userId"] = _conferenceParameters.internalUserID;
+      message["authToken"] = _conferenceParameters.authToken;
+      
       sendMessage(
         "validateToken",// Remote function name
         // result - On successful result
         function(result:Object):void { 
-          trace(LOG + "validating token for [" + _conferenceParameters.internalUserID + "]"); 
+          LOGGER.debug("validating token for [{0}]", [_conferenceParameters.internalUserID]); 
         },	
         // status - On error occurred
-        function(status:Object):void { 
-          LogUtil.error("Error occurred:"); 
-          for (var x:Object in status) { 
-            LogUtil.error(x + " : " + status[x]); 
+        function(status:Object):void {
+	      LOGGER.error("Error occurred:");
+          for (var x:Object in status) {
+			LOGGER.error(x + " : " + status[x]);
           } 
         },
-        _conferenceParameters.internalUserID
+        message
       ); //_netConnection.call      
     }
-    
-    private function joinMeeting():void {
-      sendMessage(
-        "joinMeeting",// Remote function name
-        // result - On successful result
-        function(result:Object):void { 
-          trace(LOG + "joining meeting for [" + _conferenceParameters.internalUserID + "]"); 
-        },	
-        // status - On error occurred
-        function(status:Object):void { 
-          LogUtil.error(LOG + "Error occurred:"); 
-          for (var x:Object in status) { 
-            LogUtil.error(x + " : " + status[x]); 
-          } 
-        },
-        _conferenceParameters.internalUserID
-      ); //_netConnection.call      
+      
+    private function handleValidateAuthTokenTimedOut(msg: Object):void {
+      LOGGER.debug("*** handleValidateAuthTokenTimedOut {0} **** \n", [msg.msg]);      
+      var map:Object = JSON.parse(msg.msg);  
+      var tokenValid: Boolean = map.valid as Boolean;
+      var userId: String = map.userId as String;
+
+      var logData:Object = new Object();
+      logData.user = UsersUtil.getUserData();
+      JSLog.critical("Validate auth token timed out.", logData);
+      
+      if (tokenValid) {
+        authenticated = true;
+        LOGGER.debug("*** handleValidateAuthTokenTimedOut. valid=[{0}] **** \n", [tokenValid]);
+      } else {
+        LOGGER.debug("*** handleValidateAuthTokenTimedOut. valid=[{0}] **** \n", [tokenValid]);
+        dispatcher.dispatchEvent(new InvalidAuthTokenEvent());
+      }
+      if (reconnecting) {
+        onReconnect();
+        reconnecting = false;
+      }
     }
     
     private function handleValidateAuthTokenReply(msg: Object):void {
-      trace(LOG + "*** handleValidateAuthTokenReply " + msg.msg + " **** \n");      
+      LOGGER.debug("*** handleValidateAuthTokenReply {0} **** \n", [msg.msg]);      
       var map:Object = JSON.parse(msg.msg);  
       var tokenValid: Boolean = map.valid as Boolean;
       var userId: String = map.userId as String;
       
       if (tokenValid) {
         authenticated = true;
-        trace(LOG + "*** handleValidateAuthTokenReply. valid=[ " + tokenValid + "] **** \n");
-        joinMeeting();
+        LOGGER.debug("*** handleValidateAuthTokenReply. valid=[{0}] **** \n", [tokenValid]);
       } else {
-        trace(LOG + "*** handleValidateAuthTokenReply. valid=[ " + tokenValid + "] **** \n");
+        LOGGER.debug("*** handleValidateAuthTokenReply. valid=[{0}] **** \n", [tokenValid]);
         dispatcher.dispatchEvent(new InvalidAuthTokenEvent());
       }
+      if (reconnecting) {
+        onReconnect();
+        reconnecting = false;
+      }
+    }
+
+    private function onReconnect():void {
+      if (authenticated) {
+        onReconnectSuccess();
+      } else {
+        onReconnectFailed();
+      }
+    }
+
+    private function onReconnectSuccess():void {
+      var attemptSucceeded:BBBEvent = new BBBEvent(BBBEvent.RECONNECT_CONNECTION_ATTEMPT_SUCCEEDED_EVENT);
+      attemptSucceeded.payload.type = ReconnectionManager.BIGBLUEBUTTON_CONNECTION;
+      dispatcher.dispatchEvent(attemptSucceeded);
+    }
+
+    private function onReconnectFailed():void {
+      sendUserLoggedOutEvent();
     }
     
     private function sendConnectionSuccessEvent(userid:String):void{      
@@ -175,7 +217,7 @@ package org.bigbluebutton.main.model.users
     }
     
 		public function sendMessage(service:String, onSuccess:Function, onFailure:Function, message:Object=null):void {
-      trace(LOG + "SENDING [" + service + "]");
+      LOGGER.debug("SENDING [{0}]", [service]);
 			var responder:Responder =	new Responder(                    
 					function(result:Object):void { // On successful result
 						onSuccess("Successfully sent [" + service + "]."); 
@@ -212,21 +254,19 @@ package org.bigbluebutton.main.model.users
 			try {	
 				var uri:String = _applicationURI + "/" + _conferenceParameters.room;
 				
-				trace(LOG + "::Connecting to " + uri + " [" + _conferenceParameters.username + "," + _conferenceParameters.role + "," + 
-					_conferenceParameters.conference + "," + _conferenceParameters.record + "," + _conferenceParameters.room + "]");	
+				LOGGER.debug("::Connecting to {0} [{1}]", [uri, jsonXify(_conferenceParameters)]);	
 				_netConnection.connect(uri, _conferenceParameters.username, _conferenceParameters.role,
 											_conferenceParameters.room, _conferenceParameters.voicebridge, 
 											_conferenceParameters.record, _conferenceParameters.externUserID,
-											_conferenceParameters.internalUserID, _conferenceParameters.lockOnStart, 
-                      _conferenceParameters.muteOnStart, _conferenceParameters.lockSettings);			
+											_conferenceParameters.internalUserID, _conferenceParameters.muteOnStart, _conferenceParameters.lockSettings);			
 			} catch(e:ArgumentError) {
 				// Invalid parameters.
 				switch (e.errorID) {
-					case 2004 :						
-						LogUtil.debug("Error! Invalid server location: " + uri);											   
+					case 2004 :
+						LOGGER.debug("Error! Invalid server location: {0}", [uri]);
 						break;						
 					default :
-						LogUtil.debug("UNKNOWN Error! Invalid server location: " + uri);
+						LOGGER.debug("UNKNOWN Error! Invalid server location: {0}", [uri]);
 					   break;
 				}
 			}	
@@ -249,37 +289,37 @@ package org.bigbluebutton.main.model.users
     private var _bwMon:BandwidthMonitor = new BandwidthMonitor();
     
     private function startMonitoringBandwidth():void {
-      trace("Start monitoring bandwidth.");
+	  LOGGER.info("Start monitoring bandwidth.");
       var pattern:RegExp = /(?P<protocol>.+):\/\/(?P<server>.+)\/(?P<app>.+)/;
       var result:Array = pattern.exec(_applicationURI);
       _bwMon.serverURL = result.server;
       _bwMon.serverApplication = "video";
       _bwMon.start();
     }
-        
-    private var autoReconnectTimer:Timer = new Timer(1000, 1);
     
 		public function handleResult(event:Object):void {
 			var info : Object = event.info;
 			var statusCode : String = info.code;
 
+      var logData:Object = new Object();
+      logData.user = UsersUtil.getUserData();
+      
 			switch (statusCode) {
 				case "NetConnection.Connect.Success":
-					trace(LOG + ":Connection to viewers application succeeded.");
+					LOGGER.debug("Connection to viewers application succeeded.");
+          JSLog.debug("Successfully connected to BBB App.", logData);
           
-					// uncomment this to turn on the bandwidth check
-//					startMonitoringBandwidth();
           validateToken();
 			
 					break;
 			
 				case "NetConnection.Connect.Failed":					
 					if (tried_tunneling) {
-            trace(LOG + ":Connection to viewers application failed...even when tunneling");
+            LOGGER.error(":Connection to viewers application failed...even when tunneling");
 						sendConnectionFailedEvent(ConnectionFailedEvent.CONNECTION_FAILED);
 					} else {
 						disconnect(false);
-            trace(LOG + ":Connection to viewers application failed...try tunneling");
+            LOGGER.error(":Connection to viewers application failed...try tunneling");
 						var rtmptRetryTimer:Timer = new Timer(1000, 1);
             rtmptRetryTimer.addEventListener("timer", rtmptRetryTimerHandler);
             rtmptRetryTimer.start();						
@@ -287,93 +327,97 @@ package org.bigbluebutton.main.model.users
 					break;
 					
 				case "NetConnection.Connect.Closed":	
-          trace(LOG + "Connection to viewers application closed");
-//          if (logoutOnUserCommand) {
-            sendConnectionFailedEvent(ConnectionFailedEvent.CONNECTION_CLOSED);		
-//          } else {
-//            autoReconnectTimer.addEventListener("timer", autoReconnectTimerHandler);
-//            autoReconnectTimer.start();		
-//          }
+          LOGGER.debug("Connection to viewers application closed");
+          sendConnectionFailedEvent(ConnectionFailedEvent.CONNECTION_CLOSED);		
 											
 					break;
 					
 				case "NetConnection.Connect.InvalidApp":	
-          trace(LOG + ":viewers application not found on server");			
+          LOGGER.debug(":viewers application not found on server");			
 					sendConnectionFailedEvent(ConnectionFailedEvent.INVALID_APP);				
 					break;
 					
 				case "NetConnection.Connect.AppShutDown":
-          trace(LOG + ":viewers application has been shutdown");
+          LOGGER.debug(":viewers application has been shutdown");
 					sendConnectionFailedEvent(ConnectionFailedEvent.APP_SHUTDOWN);	
 					break;
 					
 				case "NetConnection.Connect.Rejected":
-          trace(LOG + ":Connection to the server rejected. Uri: " + _applicationURI + ". Check if the red5 specified in the uri exists and is running" );
+          LOGGER.debug(":Connection to the server rejected. Uri: {0}. Check if the red5 specified in the uri exists and is running", [_applicationURI]);
 					sendConnectionFailedEvent(ConnectionFailedEvent.CONNECTION_REJECTED);		
 					break;
 				
 				case "NetConnection.Connect.NetworkChange":
-          trace(LOG + "Detected network change. User might be on a wireless and temporarily dropped connection. Doing nothing. Just making a note.");
+          JSLog.warn("Detected network change to BBB App", logData);
+          LOGGER.debug("Detected network change. User might be on a wireless and temporarily dropped connection. Doing nothing. Just making a note.");
 					break;
 					
 				default :
-          trace(LOG + ":Default status to the viewers application" );
+          LOGGER.debug(":Default status to the viewers application" );
 				   sendConnectionFailedEvent(ConnectionFailedEvent.UNKNOWN_REASON);
 				   break;
 			}
 		}
 		
-    private function autoReconnectTimerHandler(event:TimerEvent):void {
-      trace(LOG + "autoReconnectTimerHandler: " + event);
-      connect(_conferenceParameters, tried_tunneling);
-    }
-        
 		private function rtmptRetryTimerHandler(event:TimerEvent):void {
-      trace(LOG + "rtmptRetryTimerHandler: " + event);
+	  LOGGER.debug("rtmptRetryTimerHandler: {0}", [event]);
       connect(_conferenceParameters, true);
     }
 			
 		protected function netSecurityError(event: SecurityErrorEvent):void {
-      trace(LOG + "Security error - " + event.text);
+      LOGGER.error("Security error - {0}", [event.text]);
 			sendConnectionFailedEvent(ConnectionFailedEvent.UNKNOWN_REASON);
 		}
 		
 		protected function netIOError(event: IOErrorEvent):void {
-      trace(LOG + "Input/output error - " + event.text);
+      LOGGER.error("Input/output error - {0}", [event.text]);
 			sendConnectionFailedEvent(ConnectionFailedEvent.UNKNOWN_REASON);
 		}
 			
 		protected function netASyncError(event: AsyncErrorEvent):void  {
-      trace(LOG + "Asynchronous code error - " + event.toString() );
+      LOGGER.debug("Asynchronous code error - {0}", [event.toString()]);
       
-			LogUtil.debug("Asynchronous code error - " + event.toString() );
+	  		LOGGER.debug("Asynchronous code error - {0}", [event.toString()]);
 			sendConnectionFailedEvent(ConnectionFailedEvent.UNKNOWN_REASON);
 		}	
 			
 		private function sendConnectionFailedEvent(reason:String):void{
-			if (this.logoutOnUserCommand){
-				sendUserLoggedOutEvent();
-				return;
-			}
-			
-			var e:ConnectionFailedEvent = new ConnectionFailedEvent(reason);
-			dispatcher.dispatchEvent(e);
-			
-			//attemptReconnect(backoff);
+      var logData:Object = new Object();
+      
+			if (this.logoutOnUserCommand) {
+        logData.reason = "User requested.";
+        logData.user = UsersUtil.getUserData();
+        JSLog.debug("User logged out from BBB App.", logData);
+        sendUserLoggedOutEvent();
+      } else if (reason == ConnectionFailedEvent.CONNECTION_CLOSED) {
+        // do not try to reconnect if the connection failed is different than CONNECTION_CLOSED
+        logData.reason = reason;
+        logData.user = UsersUtil.getUserData();
+        JSLog.warn("User disconnected from BBB App.", logData);
+
+        if (reconnecting) {
+          var attemptFailedEvent:BBBEvent = new BBBEvent(BBBEvent.RECONNECT_CONNECTION_ATTEMPT_FAILED_EVENT);
+          attemptFailedEvent.payload.type = ReconnectionManager.BIGBLUEBUTTON_CONNECTION;
+          dispatcher.dispatchEvent(attemptFailedEvent);
+        } else {
+          reconnecting = true;
+          authenticated = false;
+
+          var disconnectedEvent:BBBEvent = new BBBEvent(BBBEvent.RECONNECT_DISCONNECTED_EVENT);
+          disconnectedEvent.payload.type = ReconnectionManager.BIGBLUEBUTTON_CONNECTION;
+          disconnectedEvent.payload.callback = connect;
+          disconnectedEvent.payload.callbackParameters = new Array(_conferenceParameters, tried_tunneling);
+          dispatcher.dispatchEvent(disconnectedEvent);
+        }
+      } else {
+        var e:ConnectionFailedEvent = new ConnectionFailedEvent(reason);
+        dispatcher.dispatchEvent(e);
+      }
 		}
 		
 		private function sendUserLoggedOutEvent():void{
 			var e:ConnectionFailedEvent = new ConnectionFailedEvent(ConnectionFailedEvent.USER_LOGGED_OUT);
 			dispatcher.dispatchEvent(e);
-		}
-		
-		private function attemptReconnect(backoff:Number):void{
-			var retryTimer:Timer = new Timer(backoff, 1);
-			retryTimer.addEventListener(TimerEvent.TIMER, function():void{
-				connect(_conferenceParameters, tried_tunneling);
-			});
-			retryTimer.start();
-			if (this.backoff < 16000) this.backoff = backoff *2;
 		}
 		
 		public function onBWCheck(... rest):Number { 
@@ -385,7 +429,7 @@ package org.bigbluebutton.main.model.users
 			if (rest.length > 0) p_bw = rest[0]; 
 			// your application should do something here 
 			// when the bandwidth check is complete 
-			trace("bandwidth = " + p_bw + " Kbps."); 
+			LOGGER.debug("bandwidth = {0} Kbps.", [p_bw]); 
 		}
 	}
 }

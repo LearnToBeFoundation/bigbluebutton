@@ -2,22 +2,9 @@ function setTitle(title){
     document.title= "BigBlueButton - " + title;
 }
 
-var i = 1;
-function addAlert(message){
-	var target = document.getElementById( 'notifications' ),
-    contentDiv = document.createElement( "div" );	
-	contentDiv.id = "alertDiv" + i;
-	i++;
-	//contentDiv.innerHTML = "<p>" + message + "</p>";
-	contentDiv.innerHTML = message;
-	contentDiv.style.display = "block";
-	target.appendChild( contentDiv );
-	target.hide();
-	target.setAttribute("role","alert");
-	target.show();
-	contentDiv.hide();
-	contentDiv.setAttribute("role","alert");
-	contentDiv.show();
+function clientReady(message){
+	var target = document.getElementById("clientReady");
+	if (target) target.innerHTML = message;
 }
 
 function determineModifier()
@@ -85,6 +72,11 @@ function determineBrowser()
 	else if ((verOffset=nAgt.indexOf("MSIE"))!=-1) {
 		browserName = "Microsoft Internet Explorer";
 		fullVersion = nAgt.substring(verOffset+5);
+	}
+	// In Puffin, the true version is after "Puffin" in userAgent
+	else if ((verOffset=nAgt.indexOf("Puffin"))!=-1) {
+		browserName = "Puffin";
+		fullVersion = nAgt.substring(verOffset+7);
 	}
 	// In Chrome, the true version is after "Chrome" 
 	else if ((verOffset=nAgt.indexOf("Chrome"))!=-1) {
